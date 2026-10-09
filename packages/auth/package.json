@@ -1,0 +1,40 @@
+{
+  "name": "@kora/auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./session": "./src/session.ts",
+    "./authenticate": "./src/authenticate.ts",
+    "./guards": "./src/guards.ts",
+    "./middleware": "./src/middleware.ts",
+    "./password": "./src/password.ts",
+    "./entitlements": "./src/entitlements.ts",
+    "./entitlement-sync": "./src/entitlement-sync.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node __tests__/password.test.mjs"
+  },
+  "dependencies": {
+    "@kora/brand": "workspace:*",
+    "@kora/database": "workspace:*",
+    "@supabase/supabase-js": "^2.117.2"
+  },
+  "peerDependencies": {
+    "next": ">=14"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "next": "14.2.35",
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@kora/disbursement",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test:gate": "tsx src/verify-gate.ts"
+  },
+  "dependencies": {
+    "@kora/database": "workspace:*",
+    "@kora/ledger": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.6.3"
+  }
+}
+

@@ -1,0 +1,94 @@
+/* ==========================================================================
+   Kora design tokens — generated from packages/brand/src/tokens.ts
+   Do not edit by hand; update tokens.ts and re-run `pnpm brand:tokens`.
+   ========================================================================== */
+
+:root {
+  /* Brand — green (#10b981) */
+  --kora-primary-50: #ecfdf5;
+  --kora-primary-100: #d1fae5;
+  --kora-primary-200: #a7f3d0;
+  --kora-primary-300: #6ee7b7;
+  --kora-primary-400: #34d399;
+  --kora-primary-500: #10b981;
+  --kora-primary-600: #059669;
+  --kora-primary-700: #047857;
+  --kora-primary-800: #065f46;
+  --kora-primary-900: #064e3b;
+  --kora-primary-950: #022c22;
+
+  /* Brand — gold (#f59e0b) */
+  --kora-accent-50: #fffbeb;
+  --kora-accent-100: #fef3c7;
+  --kora-accent-200: #fde68a;
+  --kora-accent-300: #fcd34d;
+  --kora-accent-400: #fbbf24;
+  --kora-accent-500: #f59e0b;
+  --kora-accent-600: #d97706;
+  --kora-accent-700: #b45309;
+  --kora-accent-800: #92400e;
+  --kora-accent-900: #78350f;
+  --kora-accent-950: #451a03;
+
+  /* Brand — blue (#1e40af) */
+  --kora-blue-50: #eff6ff;
+  --kora-blue-100: #dbeafe;
+  --kora-blue-200: #bfdbfe;
+  --kora-blue-300: #93c5fd;
+  --kora-blue-400: #60a5fa;
+  --kora-blue-500: #3b82f6;
+  --kora-blue-600: #2563eb;
+  --kora-blue-700: #1d4ed8;
+  --kora-blue-800: #1e40af;
+  --kora-blue-900: #1e3a8a;
+  --kora-blue-950: #172554;
+
+  /* Neutral */
+  --kora-neutral-50: #f8fafc;
+  --kora-neutral-100: #f1f5f9;
+  --kora-neutral-200: #e2e8f0;
+  --kora-neutral-300: #cbd5e1;
+  --kora-neutral-400: #94a3b8;
+  --kora-neutral-500: #64748b;
+  --kora-neutral-600: #475569;
+  --kora-neutral-700: #334155;
+  --kora-neutral-800: #1e293b;
+  --kora-neutral-900: #0f172a;
+  --kora-neutral-950: #020617;
+
+  /* Semantic */
+  --kora-success: #10b981;
+  --kora-success-foreground: #ffffff;
+  --kora-warning: #f59e0b;
+  --kora-warning-foreground: #ffffff;
+  --kora-danger: #d92d20;
+  --kora-danger-foreground: #ffffff;
+  --kora-info: #1e40af;
+  --kora-info-foreground: #ffffff;
+
+  /* Spacing */
+  --kora-space-xs: 4px;
+  --kora-space-sm: 8px;
+  --kora-space-md: 16px;
+  --kora-space-lg: 24px;
+  --kora-space-xl: 32px;
+  --kora-space-2xl: 48px;
+
+  /* Radius */
+  --kora-radius-sm: 6px;
+  --kora-radius-md: 10px;
+  --kora-radius-lg: 14px;
+  --kora-radius-full: 9999px;
+
+  /* Typography */
+  --kora-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --kora-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark surfaces only; the scales above are shared. */
+    --kora-surface: var(--kora-neutral-950);
+    --kora-surface-foreground: var(--kora-neutral-50);
+  }
+}

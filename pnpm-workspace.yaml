@@ -1,0 +1,7 @@
+# The workspace is now exactly the platform: one app and the five packages it
+# depends on. Everything else — the Docker definitions, the vendored Express/PHP
+# services and the standalone client apps — has been removed, so there are no
+# exclusions left to maintain.
+packages:
+  - "apps/*"
+  - "packages/*"

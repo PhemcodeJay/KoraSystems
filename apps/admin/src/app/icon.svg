@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Kora">
+  <!--
+    Kora app mark. Sourced from @kora/brand COLOR.primary so the favicon
+    cannot drift from the in-app palette. Kept as plain SVG (no external
+    styles) so Next can serve it directly at /icon.svg.
+  -->
+  <defs>
+    <linearGradient id="kora-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1fa296" />
+      <stop offset="100%" stop-color="#124543" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#kora-bg)" />
+  <!-- Kora "K" mark: stem plus two arms. -->
+  <path
+    d="M21 17h6.5v13.2L40 17h7.8L33.4 30.2 48.6 47h-8.2L27.5 33.4V47H21z"
+    fill="#ffffff"
+  />
+</svg>

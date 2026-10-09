@@ -1,0 +1,1305 @@
+// Kora lives in its own schema so it never collides with the 24 existing
+// SalesPilot tables in neondb's public schema (customers, products, sales,
+// users, invoices, payments, suppliers, subscriptions, reports).
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["kora"]
+}
+
+enum UserRole {
+  SME
+  SUPPLIER
+  CUSTOMER
+  ADMIN
+
+  @@schema("kora")
+}
+
+enum OnboardingStep {
+  BUSINESS_INFO
+  PRODUCTS
+  PAYMENTS
+  COMPLETE
+
+  @@schema("kora")
+}
+
+enum OnboardingStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+
+  @@schema("kora")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+
+  @@schema("kora")
+}
+
+enum LoanStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  DISBURSEMENT_PENDING
+  DISBURSED
+  REPAYING
+  SETTLED
+  DEFAULTED
+  // Dev default: real money movement is disabled until a licensed
+  // partner is in place. See packages/disbursement.
+  BLOCKED_NO_PARTNER
+
+  @@schema("kora")
+}
+
+enum RepaymentStatus {
+  PENDING
+  PAID
+  // A due date has passed with no payment recorded. Kept distinct from
+  // FAILED (an attempted payment that errored) so default tracking can
+  // query overdue instalments directly.
+  OVERDUE
+  FAILED
+  WAIVED
+
+  @@schema("kora")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+
+  @@schema("kora")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  DUE
+  OVERDUE
+  VOID
+
+  @@schema("kora")
+}
+
+enum SavingsTxnType {
+  DEPOSIT
+  WITHDRAWAL
+  INTEREST
+  FEE
+  ADJUSTMENT
+
+  @@schema("kora")
+}
+
+enum BnplStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  DEFAULTED
+  CANCELLED
+
+  @@schema("kora")
+}
+
+enum InstallmentStatus {
+  SCHEDULED
+  PAID
+  OVERDUE
+  FAILED
+
+  @@schema("kora")
+}
+
+enum PaymentMethod {
+  MPESA_STK
+  MPESA_B2C
+  WALLET
+  CASH
+  LOAN
+  BNPL
+  CARD
+
+  @@schema("kora")
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+  REFUNDED
+
+  @@schema("kora")
+}
+
+enum LedgerDirection {
+  DEBIT
+  CREDIT
+
+  @@schema("kora")
+}
+
+enum InsightType {
+  CREDIT
+  FORECAST
+  REVENUE
+  INVENTORY
+  CUSTOMER
+  GENERAL
+
+  @@schema("kora")
+}
+
+enum NotificationType {
+  LOAN_UPDATE
+  BNPL_UPDATE
+  ORDER_UPDATE
+  PAYMENT
+  INSIGHT
+  SYSTEM
+
+  @@schema("kora")
+}
+
+enum CreditRiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+
+  @@schema("kora")
+}
+
+// ============================================================================
+// Identity
+// ============================================================================
+
+// Auth provider of record is Supabase; this table is the Neon-side mirror
+// keyed by the Supabase auth user id. Role lives here, not in Supabase.
+model User {
+  id                 String    @id @default(cuid())
+  authUserId         String    @unique @map("auth_user_id")
+  email              String    @unique
+  phone              String?   @unique
+  fullName           String    @map("full_name")
+  role               UserRole  @default(CUSTOMER)
+  isActive           Boolean   @default(true) @map("is_active")
+  lastLoginAt        DateTime? @map("last_login_at")
+  // scrypt hash with a per-password random salt, encoded
+  // `scrypt$N$r$p$<salt>$<hash>`. NULL for accounts whose password lives
+  // solely in Supabase Auth, which is the production path — the column is
+  // nullable so those users keep working. Never selected into a response.
+  passwordHash       String?   @map("password_hash")
+  // Set when an ADMIN resets a password, forcing a change at next sign-in.
+  // Clearing it is the entire "change your password" flow.
+  mustChangePassword Boolean   @default(false) @map("must_change_password")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  sme           SME?
+  supplier      Supplier?
+  customer      Customer?
+  notifications Notification[]
+
+  // Secondary roles beyond `role`. An SME on a paid tier can also sell as a
+  // supplier and buy as a customer, which a single-value `role` cannot
+  // express. `role` stays authoritative for the primary role; this table
+  // carries the extras so downgrading a tier can revoke them without
+  // touching the primary role or any of its data.
+  roleAssignments    UserRoleAssignment[]
+  plan               UserPlan?
+  subscriptionEvents SubscriptionEvent[]
+  // Sales-agent pipeline. `owner` is the user who works the lead; `sme` ties it
+  // to the business so a future team seat inherits the pipeline instead of it
+  // being trapped on one person's account.
+  leads              Lead[]
+  // Neobank surfaces. Opposite sides of the `user` relation on Account, Card,
+  // Investment and InsurancePolicy — without these Prisma cannot resolve the
+  // relation and the client cannot generate at all.
+  accounts           Account[]
+  cards              Card[]
+  investments        Investment[]
+  insurancePolicies  InsurancePolicy[]
+  // Neobank crypto balances — one row per asset held.
+  cryptoWallets      CryptoWallet[]
+
+  @@index([role])
+  @@map("users")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Roles — secondary role assignment
+// ============================================================================
+
+/// A secondary role granted to a user, above their primary `User.role`.
+///
+/// Grants are additive and data-preserving: revoking a role removes the
+/// capability but leaves the SME / Supplier / Customer rows and their history
+/// in place, so a downgrade never destroys what the user built.
+model UserRoleAssignment {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       UserRole
+  // Plan tier that entitled this role, for display and audit only. Revocation
+  // is driven by the user's current tier, not by this column.
+  grantedVia PlanTier? @map("granted_via")
+  // Why it was granted — "METAL upgrade", "admin grant". Free text for the
+  // admin audit view; never shown to the user.
+  reason     String?
+  grantedAt  DateTime  @default(now()) @map("granted_at")
+  revokedAt  DateTime? @map("revoked_at")
+  revokedBy  String?   @map("revoked_by")
+
+  @@unique([userId, role])
+  @@index([role, revokedAt])
+  @@map("user_role_assignments")
+  @@schema("kora")
+}
+
+// ============================================================================
+// SME
+// ============================================================================
+
+model SME {
+  id                 String           @id @default(cuid())
+  userId             String           @unique @map("user_id")
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName       String           @map("business_name")
+  registrationNumber String?          @map("registration_number")
+  businessType       String?          @map("business_type")
+  county             String?
+  town               String?
+  address            String?
+  yearsInBusiness    Int?             @map("years_in_business")
+  onboardingStep     OnboardingStep   @default(BUSINESS_INFO) @map("onboarding_step")
+  onboardingStatus   OnboardingStatus @default(NOT_STARTED) @map("onboarding_status")
+  mpesaTill          String?          @map("mpesa_till")
+  mpesaPaybill       String?          @map("mpesa_paybill")
+
+  subscriptionStatus SubscriptionStatus @default(ACTIVE) @map("subscription_status")
+  subscriptionPaidAt DateTime?          @map("subscription_paid_at")
+  subscriptionAmount Decimal            @default(2500) @map("subscription_amount") @db.Decimal(14, 2)
+  subscriptionCycle  String             @default("MONTHLY") @map("subscription_cycle")
+
+  tills         Till[]
+  products      Product[]
+  sales         Sale[]
+  orders        Order[]
+  invoices      Invoice[]
+  loans         Loan[]
+  savings       Savings?
+  creditScores  CreditScore[]
+  insights      Insight[]
+  notifications Notification[]
+  bnplPlans     BNPL[]
+  ledgerEntries Transaction[]  @relation("SmeTransactions")
+  leads         Lead[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([onboardingStatus])
+  @@map("smes")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Supplier
+// ============================================================================
+
+model Supplier {
+  id             String  @id @default(cuid())
+  userId         String  @unique @map("user_id")
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName    String  @map("company_name")
+  registrationNo String? @map("registration_no")
+  contactEmail   String? @map("contact_email")
+  contactPhone   String? @map("contact_phone")
+  county         String?
+  town           String?
+  address        String?
+  // 0.00 - 5.00, denormalised average of ratings
+  rating         Decimal @default(0) @db.Decimal(3, 2)
+  ratingCount    Int     @default(0) @map("rating_count")
+  mpesaPaybill   String? @map("mpesa_paybill")
+  mpesaTill      String? @map("mpesa_till")
+
+  products Product[]
+  orders   Order[]
+  invoices Invoice[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("suppliers")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Customer
+// ============================================================================
+
+model Customer {
+  id       String  @id @default(cuid())
+  userId   String  @unique @map("user_id")
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName String  @map("full_name")
+  phone    String? @unique
+  email    String? @unique
+  county   String?
+  town     String?
+
+  loyaltyPoints Int     @default(0) @map("loyalty_points")
+  loyaltyTier   String  @default("BRONZE") @map("loyalty_tier")
+  totalSpend    Decimal @default(0) @map("total_spend") @db.Decimal(14, 2)
+  purchaseCount Int     @default(0) @map("purchase_count")
+
+  // Customer-side credit standing, distinct from SME credit score
+  creditLimit Decimal @default(0) @map("credit_limit") @db.Decimal(14, 2)
+  creditUsed  Decimal @default(0) @map("credit_used") @db.Decimal(14, 2)
+  creditScore Int?    @map("credit_score")
+
+  sales         Sale[]
+  bnplPlans     BNPL[]
+  walletEntries Transaction[]  @relation("CustomerWallet")
+  notifications Notification[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([phone])
+  @@map("customers")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Catalog
+// ============================================================================
+
+model Product {
+  id                String    @id @default(cuid())
+  smeId             String    @map("sme_id")
+  sme               SME       @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  supplierId        String?   @map("supplier_id")
+  supplier          Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  name              String
+  description       String?
+  sku               String    @unique
+  barcode           String?   @unique
+  category          String?
+  price             Decimal   @db.Decimal(14, 2)
+  costPrice         Decimal?  @map("cost_price") @db.Decimal(14, 2)
+  stockQuantity     Int       @default(0) @map("stock_quantity")
+  lowStockThreshold Int       @default(10) @map("low_stock_threshold")
+  reorderLevel      Int       @default(10) @map("reorder_level")
+  imageUrl          String?   @map("image_url")
+  isActive          Boolean   @default(true) @map("is_active")
+  // Local mirror id from the offline POS Dexie store
+  clientId          String?   @unique @map("client_id")
+
+  saleItems    SaleItem[]
+  orderItems   OrderItem[]
+  invoiceItems InvoiceItem[]
+  bnplItems    BNPLItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([smeId, isActive])
+  @@index([barcode])
+  @@index([sku])
+  @@map("products")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Sales
+// ============================================================================
+
+model Sale {
+  id            String        @id @default(cuid())
+  smeId         String        @map("sme_id")
+  sme           SME           @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  customerId    String?       @map("customer_id")
+  customer      Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  totalAmount   Decimal       @map("total_amount") @db.Decimal(14, 2)
+  costTotal     Decimal?      @map("cost_total") @db.Decimal(14, 2)
+  paymentMethod PaymentMethod @map("payment_method")
+  paymentStatus PaymentStatus @default(COMPLETED) @map("payment_status")
+  // Commission the platform takes (e.g. KES 5 SME fee)
+  platformFee   Decimal       @default(0) @map("platform_fee") @db.Decimal(14, 2)
+  mpesaReceipt  String?       @map("mpesa_receipt")
+  // Idempotency key from the offline POS so replayed syncs never double-post
+  clientId      String?       @unique @map("client_id")
+  notes         String?
+  // True when the row was written with no real money movement
+  simulated     Boolean       @default(false)
+
+  items         SaleItem[]
+  // One-to-one link to the ledger header. FK lives here (the owning side);
+  // Transaction.sale is the inverse with no `fields`.
+  transactionId String?      @unique @map("transaction_id")
+  transaction   Transaction? @relation("SaleTransaction", fields: [transactionId], references: [id], onDelete: SetNull)
+
+  soldAt    DateTime @default(now()) @map("sold_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([smeId, soldAt])
+  @@index([smeId])
+  @@index([customerId])
+  @@map("sales")
+  @@schema("kora")
+}
+
+model SaleItem {
+  id        String   @id @default(cuid())
+  saleId    String   @map("sale_id")
+  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity  Int
+  unitPrice Decimal  @map("unit_price") @db.Decimal(14, 2)
+  lineTotal Decimal  @map("line_total") @db.Decimal(14, 2)
+  costPrice Decimal? @map("cost_price") @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([saleId])
+  @@index([productId])
+  @@map("sale_items")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Orders (SME -> Supplier)
+// ============================================================================
+
+model Order {
+  id          String      @id @default(cuid())
+  orderNumber String      @unique @map("order_number")
+  smeId       String      @map("sme_id")
+  sme         SME         @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  supplierId  String      @map("supplier_id")
+  supplier    Supplier    @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  status      OrderStatus @default(PENDING)
+  totalAmount Decimal     @map("total_amount") @db.Decimal(14, 2)
+  notes       String?
+  placedAt    DateTime    @default(now()) @map("placed_at")
+  confirmedAt DateTime?   @map("confirmed_at")
+  shippedAt   DateTime?   @map("shipped_at")
+  deliveredAt DateTime?   @map("delivered_at")
+
+  items    OrderItem[]
+  invoices Invoice[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([smeId, status])
+  @@index([supplierId, status])
+  @@map("orders")
+  @@schema("kora")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String  @map("order_id")
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity  Int
+  unitPrice Decimal @map("unit_price") @db.Decimal(14, 2)
+  lineTotal Decimal @map("line_total") @db.Decimal(14, 2)
+
+  @@index([orderId])
+  @@map("order_items")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Invoices
+// ============================================================================
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique @map("invoice_number")
+  smeId         String        @map("sme_id")
+  sme           SME           @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  supplierId    String?       @map("supplier_id")
+  supplier      Supplier?     @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  orderId       String?       @map("order_id")
+  order         Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  status        InvoiceStatus @default(DRAFT)
+  subtotal      Decimal       @db.Decimal(14, 2)
+  taxAmount     Decimal       @default(0) @map("tax_amount") @db.Decimal(14, 2)
+  totalAmount   Decimal       @map("total_amount") @db.Decimal(14, 2)
+  amountPaid    Decimal       @default(0) @map("amount_paid") @db.Decimal(14, 2)
+  dueDate       DateTime?     @map("due_date")
+  paidAt        DateTime?     @map("paid_at")
+  simulated     Boolean       @default(false)
+
+  items InvoiceItem[]
+
+  issuedAt  DateTime @default(now()) @map("issued_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([smeId, status])
+  @@index([supplierId])
+  @@map("invoices")
+  @@schema("kora")
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String   @map("invoice_id")
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId   String?  @map("product_id")
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  description String
+  quantity    Int
+  unitPrice   Decimal  @map("unit_price") @db.Decimal(14, 2)
+  lineTotal   Decimal  @map("line_total") @db.Decimal(14, 2)
+
+  @@index([invoiceId])
+  @@map("invoice_items")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Credit
+// ============================================================================
+
+model Loan {
+  id           String     @id @default(cuid())
+  loanNumber   String     @unique @map("loan_number")
+  smeId        String     @map("sme_id")
+  sme          SME        @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  principal    Decimal    @db.Decimal(14, 2)
+  interestRate Decimal    @map("interest_rate") @db.Decimal(7, 4)
+  termMonths   Int        @map("term_months")
+  totalPayable Decimal    @map("total_payable") @db.Decimal(14, 2)
+  amountRepaid Decimal    @default(0) @map("amount_repaid") @db.Decimal(14, 2)
+  status       LoanStatus @default(PENDING_REVIEW)
+  purpose      String?
+
+  // Credit decision snapshot, captured at application time
+  creditScoreAtApplication Int?     @map("credit_score_at_application")
+  maxApprovedAmount        Decimal? @map("max_approved_amount") @db.Decimal(14, 2)
+
+  // Disbursement
+  disbursedAt     DateTime? @map("disbursed_at")
+  disbursementRef String?   @map("disbursement_ref")
+  // Why disbursement is blocked, e.g. "No licensed disbursement partner configured"
+  blockedReason   String?   @map("blocked_reason")
+  simulated       Boolean   @default(false)
+
+  decisionReason   String?   @map("decision_reason")
+  decidedAt        DateTime? @map("decided_at")
+  decidedByUserId  String?   @map("decided_by_user_id")
+  firstPaymentDate DateTime? @map("first_payment_date")
+  maturityDate     DateTime? @map("maturity_date")
+
+  repayments   Repayment[]
+  creditScores CreditScore[]
+  transactions Transaction[] @relation("LoanTransactions")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([smeId, status])
+  @@index([status])
+  @@map("loans")
+  @@schema("kora")
+}
+
+model Repayment {
+  id                String          @id @default(cuid())
+  loanId            String          @map("loan_id")
+  loan              Loan            @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  installmentNumber Int             @map("installment_number")
+  amountDue         Decimal         @map("amount_due") @db.Decimal(14, 2)
+  principalPaid     Decimal         @default(0) @map("principal_paid") @db.Decimal(14, 2)
+  interestPaid      Decimal         @default(0) @map("interest_paid") @db.Decimal(14, 2)
+  amountPaid        Decimal         @default(0) @map("amount_paid") @db.Decimal(14, 2)
+  status            RepaymentStatus @default(PENDING)
+  dueDate           DateTime        @map("due_date")
+  paidAt            DateTime?       @map("paid_at")
+  mpesaReceipt      String?         @map("mpesa_receipt")
+  simulated         Boolean         @default(false)
+
+  transactions Transaction[] @relation("RepaymentTransactions")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([loanId, installmentNumber])
+  @@index([loanId, status])
+  @@map("repayments")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Savings
+// ============================================================================
+
+model Savings {
+  id               String  @id @default(cuid())
+  smeId            String  @unique @map("sme_id")
+  sme              SME     @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  accountNumber    String  @unique @map("account_number")
+  balance          Decimal @default(0) @db.Decimal(14, 2)
+  totalDeposits    Decimal @default(0) @map("total_deposits") @db.Decimal(14, 2)
+  totalWithdrawals Decimal @default(0) @map("total_withdrawals") @db.Decimal(14, 2)
+  interestEarned   Decimal @default(0) @map("interest_earned") @db.Decimal(14, 2)
+  interestRate     Decimal @default(0.05) @map("interest_rate") @db.Decimal(7, 4)
+  isFrozen         Boolean @default(false) @map("is_frozen")
+
+  transactions SavingsTransaction[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("savings")
+  @@schema("kora")
+}
+
+model SavingsTransaction {
+  id           String         @id @default(cuid())
+  savingsId    String         @map("savings_id")
+  savings      Savings        @relation(fields: [savingsId], references: [id], onDelete: Cascade)
+  type         SavingsTxnType
+  amount       Decimal        @db.Decimal(14, 2)
+  balanceAfter Decimal        @map("balance_after") @db.Decimal(14, 2)
+  reference    String?
+  narration    String?
+  simulated    Boolean        @default(false)
+
+  // One-to-one link to the ledger header for this savings movement
+  transactionId String?      @unique @map("transaction_id")
+  transaction   Transaction? @relation("SavingsTransactionTxn", fields: [transactionId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([savingsId, createdAt])
+  @@map("savings_transactions")
+  @@schema("kora")
+}
+
+// ============================================================================
+// BNPL
+// ============================================================================
+
+model BNPL {
+  id               String     @id @default(cuid())
+  reference        String     @unique
+  customerId       String     @map("customer_id")
+  customer         Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  smeId            String     @map("sme_id")
+  sme              SME        @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  totalAmount      Decimal    @map("total_amount") @db.Decimal(14, 2)
+  downPayment      Decimal    @default(0) @map("down_payment") @db.Decimal(14, 2)
+  financedAmount   Decimal    @map("financed_amount") @db.Decimal(14, 2)
+  installmentCount Int        @map("installment_count")
+  frequency        String     @default("MONTHLY")
+  status           BnplStatus @default(PENDING)
+  approvedAt       DateTime?  @map("approved_at")
+  completedAt      DateTime?  @map("completed_at")
+  simulated        Boolean    @default(false)
+
+  items        BNPLItem[]
+  installments BNPLInstallment[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([customerId, status])
+  @@index([smeId])
+  @@map("bnpl")
+  @@schema("kora")
+}
+
+model BNPLItem {
+  id        String  @id @default(cuid())
+  bnplId    String  @map("bnpl_id")
+  bnpl      BNPL    @relation(fields: [bnplId], references: [id], onDelete: Cascade)
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity  Int     @default(1)
+  unitPrice Decimal @map("unit_price") @db.Decimal(14, 2)
+  lineTotal Decimal @map("line_total") @db.Decimal(14, 2)
+
+  @@index([bnplId])
+  @@map("bnpl_items")
+  @@schema("kora")
+}
+
+model BNPLInstallment {
+  id                String            @id @default(cuid())
+  bnplId            String            @map("bnpl_id")
+  bnpl              BNPL              @relation(fields: [bnplId], references: [id], onDelete: Cascade)
+  installmentNumber Int               @map("installment_number")
+  amountDue         Decimal           @map("amount_due") @db.Decimal(14, 2)
+  amountPaid        Decimal           @default(0) @map("amount_paid") @db.Decimal(14, 2)
+  status            InstallmentStatus @default(SCHEDULED)
+  dueDate           DateTime          @map("due_date")
+  paidAt            DateTime?         @map("paid_at")
+  mpesaReceipt      String?           @map("mpesa_receipt")
+  simulated         Boolean           @default(false)
+
+  transactions Transaction[] @relation("BNPLInstallmentTransactions")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([bnplId, installmentNumber])
+  @@index([bnplId, status])
+  @@map("bnpl_installments")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Unified ledger (double entry)
+// ============================================================================
+
+// Transaction is the header. Every movement posts at least one
+// LedgerEntry; debits must equal credits per transaction, which is what
+// stops admin reports double counting across Sale/Loan/Savings/BNPL.
+model Transaction {
+  id          String  @id @default(cuid())
+  reference   String  @unique
+  type        String
+  description String?
+  // PLATFORM_FLOAT | SME_WALLET | SUPPLIER_PAYABLE | LOAN_PRINCIPAL |
+  // LOAN_RECEIVABLE | SAVINGS | BNPL_RECEIVABLE | REVENUE | CUSTOMER_WALLET
+  accountCode String  @map("account_code")
+  amount      Decimal @db.Decimal(14, 2)
+  currency    String  @default("KES")
+  smeId       String? @map("sme_id")
+  customerId  String? @map("customer_id")
+  // Set when the row was written by SimulatedProvider / demo seed.
+  // Admin surfaces MUST badge these so demo data is never read as real money.
+  simulated   Boolean @default(false)
+  metadata    Json?
+
+  // FKs for the one-to-many relations (a posting can cover many repayments
+  // or installments). Sale and SavingsTransaction are one-to-one, so their
+  // FK lives on the domain side instead.
+  loanId            String? @map("loan_id")
+  repaymentId       String? @map("repayment_id")
+  bnplInstallmentId String? @map("bnpl_installment_id")
+
+  entries         LedgerEntry[]
+  // Reporting relation. smeId is a plain column (a posting can outlive the
+  // SME it touched), so this is a read-only join. For customerId the
+  // existing `customerWallet` relation already holds the FK, so it is reused
+  // rather than declaring a second one on the same column.
+  smeOwner        SME?                @relation("SmeTransactions", fields: [smeId], references: [id], onDelete: SetNull)
+  // Inverses of the domain-side FKs (Sale.transactionId etc). For these the
+  // owning side carries `fields`, so these must not.
+  sale            Sale?               @relation("SaleTransaction")
+  loan            Loan?               @relation("LoanTransactions", fields: [loanId], references: [id], onDelete: SetNull)
+  repayment       Repayment?          @relation("RepaymentTransactions", fields: [repaymentId], references: [id], onDelete: SetNull)
+  savingsTxn      SavingsTransaction? @relation("SavingsTransactionTxn")
+  bnplInstallment BNPLInstallment?    @relation("BNPLInstallmentTransactions", fields: [bnplInstallmentId], references: [id], onDelete: SetNull)
+  customerWallet  Customer?           @relation("CustomerWallet", fields: [customerId], references: [id], onDelete: SetNull)
+
+  postedAt  DateTime @default(now()) @map("posted_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([accountCode, postedAt])
+  @@index([smeId])
+  @@index([type, postedAt])
+  @@index([loanId])
+  @@index([repaymentId])
+  @@index([bnplInstallmentId])
+  @@map("transactions")
+  @@schema("kora")
+}
+
+model LedgerEntry {
+  id            String          @id @default(cuid())
+  transactionId String          @map("transaction_id")
+  transaction   Transaction     @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  accountCode   String          @map("account_code")
+  direction     LedgerDirection
+  amount        Decimal         @db.Decimal(14, 2)
+  narration     String?
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  @@index([transactionId])
+  @@index([accountCode])
+  @@map("ledger_entries")
+  @@schema("kora")
+}
+
+// ============================================================================
+// AI
+// ============================================================================
+
+model CreditScore {
+  id              String          @id @default(cuid())
+  smeId           String          @map("sme_id")
+  sme             SME             @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  loanId          String?         @map("loan_id")
+  loan            Loan?           @relation(fields: [loanId], references: [id], onDelete: SetNull)
+  // 0 - 1000
+  score           Int
+  riskLevel       CreditRiskLevel @map("risk_level")
+  maxLoan         Decimal         @map("max_loan") @db.Decimal(14, 2)
+  interestRate    Decimal         @map("interest_rate") @db.Decimal(7, 4)
+  explanation     String
+  recommendations String[]
+  // Per-factor breakdown: sales consistency, revenue growth, volume,
+  // retention, payment history, business age, inventory turnover,
+  // debt-to-income, savings behaviour, supplier relations.
+  // Milestone 1 writes deterministic placeholder factors; Milestone 2
+  // swaps the computation without changing this shape.
+  factors         Json
+  model           String          @default("deterministic-v1")
+  isPlaceholder   Boolean         @default(true) @map("is_placeholder")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([smeId, createdAt])
+  @@map("credit_scores")
+  @@schema("kora")
+}
+
+model Insight {
+  id       String      @id @default(cuid())
+  smeId    String      @map("sme_id")
+  sme      SME         @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  type     InsightType
+  title    String
+  body     String
+  // Forecast: 7d/30d/90d, daysUntilStockout, recommendedOrder, confidence
+  payload  Json?
+  priority Int         @default(3)
+  isRead   Boolean     @default(false) @map("is_read")
+  model    String?
+
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([smeId, type, createdAt])
+  @@index([isRead])
+  @@map("insights")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Notifications
+// ============================================================================
+
+model Notification {
+  id         String           @id @default(cuid())
+  userId     String           @map("user_id")
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  smeId      String?          @map("sme_id")
+  sme        SME?             @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  customerId String?          @map("customer_id")
+  customer   Customer?        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type       NotificationType
+  title      String
+  body       String
+  href       String?
+  isRead     Boolean          @default(false) @map("is_read")
+  readAt     DateTime?        @map("read_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, isRead])
+  @@index([smeId])
+  @@map("notifications")
+  @@schema("kora")
+}
+
+// ============================================================================
+// POS — Tills & Receipts
+// ============================================================================
+
+model Till {
+  id             Int       @id @default(autoincrement())
+  // Owning business. Tills previously had no tenant key, so every signed-in
+  // SME could read every till's balances; `openedBy` is a free-text name and
+  // cannot scope a query.
+  smeId          String?   @map("sme_id")
+  sme            SME?      @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  name           String
+  status         String    @default("open")
+  openingBalance Decimal   @db.Decimal(14, 2)
+  currentBalance Decimal   @db.Decimal(14, 2)
+  openedBy       String
+  openedAt       DateTime  @default(now())
+  closedAt       DateTime?
+  closedBy       String?
+  cashIn         Decimal   @default(0) @db.Decimal(14, 2)
+  cashOut        Decimal   @default(0) @db.Decimal(14, 2)
+  createdAt      DateTime  @default(now())
+
+  @@index([smeId])
+  @@map("tills")
+  @@schema("kora")
+}
+
+model Receipt {
+  id            Int      @id @default(autoincrement())
+  saleId        String
+  receiptNumber Int      @unique
+  subtotal      Decimal  @db.Decimal(14, 2)
+  tax           Decimal  @default(0) @db.Decimal(14, 2)
+  total         Decimal  @db.Decimal(14, 2)
+  paymentMethod String
+  createdAt     DateTime @default(now())
+
+  @@map("receipts")
+  @@schema("kora")
+}
+
+// ============================================================================
+// POS — Stock Adjustments & Refunds
+// ============================================================================
+
+model StockAdjustment {
+  id             String   @id @default(cuid())
+  productId      String
+  adjustmentType String // "in" | "out" | "correction"
+  quantity       Int
+  reason         String
+  userId         String
+  createdAt      DateTime @default(now())
+
+  @@map("stock_adjustments")
+  @@schema("kora")
+}
+
+model Refund {
+  id        String   @id @default(cuid())
+  saleId    String
+  amount    Decimal  @db.Decimal(14, 2)
+  reason    String?
+  status    String   @default("PENDING") // "PENDING" | "APPROVED" | "PROCESSED" | "REJECTED"
+  createdAt DateTime @default(now())
+
+  @@map("refunds")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Supplier Orders
+// ============================================================================
+
+model SupplierOrder {
+  id          String   @id @default(cuid())
+  orderNumber String   @unique
+  smeId       String
+  supplierId  String
+  status      String   @default("PENDING")
+  totalAmount Decimal  @db.Decimal(14, 2)
+  items       Json?
+  placedAt    DateTime @default(now())
+
+  @@map("supplier_orders")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Neobank — Crypto Wallets
+// ============================================================================
+
+/// A per-asset crypto balance held by a user.
+///
+/// One row per (user, asset), enforced by `@@unique([userId, symbol])`. The
+/// Neobank routes top up and debit a balance by upserting on that compound
+/// key, so two concurrent deposits of the same asset cannot both read the
+/// old balance and write back a value that loses one of them.
+model CryptoWallet {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Ticker as traded: BTC, ETH, SOL, USDT, USDC.
+  symbol    String
+  /// 8 decimal places — the precision a crypto balance actually needs, and
+  /// the same scale as `Investment.quantity`.
+  balance   Decimal  @default(0) @db.Decimal(18, 8)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, symbol])
+  @@index([userId])
+  @@map("crypto_wallets")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Neobank — Bank Accounts (Integrated Banking)
+// ============================================================================
+
+model Account {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountName   String   @map("account_name")
+  accountType   String   @map("account_type")
+  balance       Decimal  @default(0) @db.Decimal(14, 2)
+  accountNumber String   @unique @map("account_number")
+  currency      String   @default("KES") @map("currency")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  cards         Card[]
+
+  @@index([userId])
+  @@index([accountNumber])
+  @@map("accounts")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Neobank — Cards (Virtual & Physical)
+// ============================================================================
+
+model Card {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId      String   @map("account_id")
+  account        Account  @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  cardName       String   @map("card_name")
+  cardType       String   @map("card_type")
+  lastFourDigits String   @map("last_four_digits")
+  expiryMonth    Int      @map("expiry_month")
+  expiryYear     Int      @map("expiry_year")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([accountId])
+  @@map("cards")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Neobank — Investment Portfolio
+// ============================================================================
+
+model Investment {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol       String   @map("symbol")
+  name         String   @map("name")
+  type         String   @map("type")
+  quantity     Decimal  @map("quantity") @db.Decimal(18, 8)
+  averagePrice Decimal  @map("average_price") @db.Decimal(12, 2)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([symbol])
+  @@map("investments")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Neobank — Insurance Policies
+// ============================================================================
+
+model InsurancePolicy {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policyName String   @map("policy_name")
+  policyType String   @map("policy_type")
+  provider   String   @map("provider")
+  premium    Decimal  @default(0) @map("premium") @db.Decimal(14, 2)
+  status     String   @default("active") @map("status")
+  expiryDate DateTime @map("expiry_date")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("insurance_policies")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Neobank — Plan Tiers
+// ============================================================================
+
+enum PlanTier {
+  FREE
+  STANDARD
+  METAL
+
+  @@schema("kora")
+}
+
+model UserPlan {
+  id               String             @id @default(cuid())
+  userId           String             @unique @map("user_id")
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier             PlanTier           @default(STANDARD) @map("tier")
+  // Mirrors SME.subscriptionStatus for non-SME users, so every account has a
+  // billable state. Entitlements are granted on tier, but only while status is
+  // ACTIVE or PAST_DUE — a CANCELLED plan keeps its tier for display but
+  // unlocks nothing.
+  status           SubscriptionStatus @default(ACTIVE)
+  cycle            String             @default("MONTHLY")
+  amount           Decimal            @default(0) @db.Decimal(14, 2)
+  currentPeriodEnd DateTime?          @map("current_period_end")
+  cancelledAt      DateTime?          @map("cancelled_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  @@map("user_plans")
+  @@schema("kora")
+}
+
+/// Append-only audit of every subscription change.
+///
+/// Billing state decides what a user can reach, so "who changed this tier, and
+/// when" has to be answerable after the fact. Rows are never updated or
+/// deleted: a change appends one and mutates UserPlan.
+model SubscriptionEvent {
+  id         String              @id @default(cuid())
+  userId     String              @map("user_id")
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // NULL adminId for system-initiated events (expiry sweep, upgrade webhook).
+  adminId    String?             @map("admin_id")
+  fromTier   PlanTier?           @map("from_tier")
+  toTier     PlanTier?           @map("to_tier")
+  fromStatus SubscriptionStatus? @map("from_status")
+  toStatus   SubscriptionStatus? @map("to_status")
+  amount     Decimal?            @db.Decimal(14, 2)
+  cycle      String?
+  reason     String?
+  createdAt  DateTime            @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("subscription_events")
+  @@schema("kora")
+}
+
+// ============================================================================
+// Growth — AI sales agent (lead pipeline + outreach email audit)
+// ============================================================================
+
+/// Where a lead came from. `AI_SUGGESTED` rows are model output: contact
+/// details are best-guesses until a human confirms them, which is what the
+/// `Lead.verified` flag tracks.
+enum LeadSource {
+  MANUAL
+  AI_SUGGESTED
+  IMPORTED
+  INBOUND
+
+  @@schema("kora")
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  REPLIED
+  QUALIFIED
+  CONVERTED
+  LOST
+
+  @@schema("kora")
+}
+
+enum EmailStatus {
+  DRAFT
+  SENT
+  FAILED
+
+  @@schema("kora")
+}
+
+/// One row per prospect in the sales pipeline.
+///
+/// Ownership is two-level on purpose: `ownerUserId` scopes the lead to the
+/// person working it (which is what the routes filter on today), while `smeId`
+/// stamps it with the business so org-level sharing arrives with multi-tenancy
+/// rather than needing a data migration.
+model Lead {
+  id          String  @id @default(cuid())
+  ownerUserId String  @map("owner_user_id")
+  owner       User    @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  smeId       String? @map("sme_id")
+  sme         SME?    @relation(fields: [smeId], references: [id], onDelete: SetNull)
+
+  company     String
+  contactName String? @map("contact_name")
+  role        String?
+  email       String?
+  phone       String?
+  city        String?
+  country     String  @default("Kenya")
+
+  source      LeadSource @default(MANUAL)
+  status      LeadStatus @default(NEW)
+  // 0-100 fit score. NULL means "not scored yet" — distinct from a low score,
+  // so the batch agent can find its queue with `score IS NULL`.
+  score       Int?
+  scoreReason String?    @map("score_reason")
+  notes       String?
+  // True once a human confirmed the contact details. AI-suggested leads start
+  // false; sending to an unverified address is how a domain gets flagged.
+  verified    Boolean    @default(false)
+
+  lastEmailedAt DateTime? @map("last_emailed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  emails OutreachEmail[]
+
+  @@index([ownerUserId, status])
+  @@index([ownerUserId, score])
+  @@map("leads")
+  @@schema("kora")
+}
+
+/// An email drafted or sent to a lead.
+///
+/// Append-only in spirit: `SENT` rows record what actually left the building
+/// (`provider` is `smtp` or `simulated`, mirroring how the M-Pesa transactions
+/// record `simulated` so a demo can never be mistaken for money that moved).
+model OutreachEmail {
+  id     String @id @default(cuid())
+  leadId String @map("lead_id")
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  subject   String
+  body      String
+  status    EmailStatus @default(DRAFT)
+  // "smtp" when a real transport accepted it, "simulated" for demo sends.
+  provider  String?
+  messageId String?     @map("message_id")
+  error     String?
+  sentAt    DateTime?   @map("sent_at")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@index([leadId, status])
+  @@map("outreach_emails")
+  @@schema("kora")
+}

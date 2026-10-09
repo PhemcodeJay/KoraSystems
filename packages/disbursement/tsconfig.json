@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@kora/brand": ["../brand/src/index.ts"],
+      "@kora/ledger": ["../ledger/src/index.ts"],
+      "@kora/database": ["../database/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

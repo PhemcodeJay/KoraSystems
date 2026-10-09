@@ -1,0 +1,37 @@
+{
+  "name": "@kora/platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kora by Kora Systems — SME commerce, credit and supplier platform",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check:deps": "node scripts/check-deps.mjs",
+    "prebuild": "node scripts/check-deps.mjs",
+    "build": "turbo run build",
+    "dev": "node scripts/dev.mjs",
+    "start": "node scripts/dev.mjs start",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "db:generate": "pnpm --filter @kora/database generate",
+    "db:migrate": "pnpm --filter @kora/database migrate",
+    "db:push": "pnpm --filter @kora/database push",
+    "db:seed": "pnpm --filter @kora/database seed",
+    "db:rescore": "pnpm --filter @kora/database seed -- --rescore",
+    "db:studio": "pnpm --filter @kora/database studio",
+    "db:reset": "pnpm --filter @kora/database reset",
+    "gate:verify": "pnpm --filter @kora/disbursement test:gate",
+    "brand:verify": "tsx scripts/verify-brand.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "prisma": "^6.16.2",
+    "tsx": "^4.23.15",
+    "turbo": "^2.11.4",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.71.0"
+  }
+}
