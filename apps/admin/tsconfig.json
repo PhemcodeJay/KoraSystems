@@ -17,6 +17,7 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./src/*"],
+      "@kora/ai": ["../../packages/ai/src/index.ts"],
       "@kora/auth": ["../../packages/auth/src/index.ts"],
       "@kora/auth/*": ["../../packages/auth/src/*"],
       "@kora/brand": ["../../packages/brand/src/index.ts"],

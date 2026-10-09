@@ -11,6 +11,7 @@
     "test": "node __tests__/api-routes.test.js"
   },
   "dependencies": {
+    "@kora/ai": "workspace:*",
     "@kora/auth": "workspace:*",
     "@kora/brand": "workspace:*",
     "@kora/database": "workspace:*",
@@ -18,12 +19,14 @@
     "@kora/ledger": "workspace:*",
     "clsx": "^2.1.1",
     "next": "14.2.35",
+    "nodemailer": "^6.9.16",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.15.4"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/nodemailer": "^6.4.17",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.20",

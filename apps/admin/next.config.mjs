@@ -36,7 +36,7 @@ const nextConfig = {
   // EPERM symlink errors and aborts an otherwise successful build. If a minimal
   // Docker image is needed, re-enable via `output: process.env.STANDALONE ? "standalone" : undefined`.
   // Workspace packages ship raw TypeScript; transpile them with the app.
-  transpilePackages: ["@kora/brand", "@kora/ledger", "@kora/disbursement"],
+  transpilePackages: ["@kora/ai", "@kora/brand", "@kora/ledger", "@kora/disbursement"],
 
   experimental: {
     /**

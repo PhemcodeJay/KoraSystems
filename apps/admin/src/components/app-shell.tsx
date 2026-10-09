@@ -88,6 +88,12 @@ const SECTIONS: Array<{ group: string; items: NavItem[] }> = [
     ],
   },
   {
+    group: "Growth",
+    items: [
+      { href: "/growth", label: "Sales agent", icon: "✦", roles: ["SME", "ADMIN"] },
+    ],
+  },
+  {
     group: "Shop",
     items: [
       { href: "/customer/shop", label: "Shop", icon: "◇", roles: ["CUSTOMER", "SME", "SUPPLIER"], heldBy: "CUSTOMER" },
