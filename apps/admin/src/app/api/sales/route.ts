@@ -69,6 +69,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "customerId is required." }, { status: 400 });
   }
 
+  // SaaS monthly-sales cap, best-effort pre-migration.
+  if (smeId && !scope.isAdmin) {
+    try {
+      const { getTenantSubscription } = await import("@kora/auth/tenant-billing");
+      const { limitExceeded } = await import("@kora/auth/tenant-usage");
+      const sub = await getTenantSubscription(prisma, smeId);
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+      const used = await prisma.sale.count({ where: { smeId, soldAt: { gte: monthStart } } });
+      const check = limitExceeded(sub.tier, "sales", used);
+      if (!check.ok) {
+        return NextResponse.json(
+          { error: check.error, limit: check.limit, used: check.used, upgradeTo: check.upgradeTo },
+          { status: 402 },
+        );
+      }
+    } catch {
+      // Tenant tables missing — skip the cap.
+    }
+  }
+
   const sale = await prisma.sale.create({
     data: {
       smeId,

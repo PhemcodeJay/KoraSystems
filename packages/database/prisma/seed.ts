@@ -19,7 +19,7 @@ try {
 } catch {
   // no local .env; rely on the ambient environment
 }
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/client";
 import { BRAND } from "@kora/brand";
 import {
   bnplLegs,

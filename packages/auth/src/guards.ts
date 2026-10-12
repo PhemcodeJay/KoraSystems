@@ -57,16 +57,38 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   if (user.supplier) usable.add("SUPPLIER");
   if (user.customer) usable.add("CUSTOMER");
 
+  // Tenant billing rides on the session: the SME's tier/status resolves from
+  // `sme_subscriptions` first. Those tables only exist after the SaaS
+  // migration lands, so resolve defensively — a missing table degrades to the
+  // owner's UserPlan, never to a crashed page.
+  let planTier = user.plan?.tier as string | undefined;
+  let planStatus = user.plan?.status as string | undefined;
+  const tenantSeats: { smeId: string; role: string }[] = [];
+  const tenantSmeId: string | null = user.sme?.id ?? null;
+  if (tenantSmeId) {
+    try {
+      const { getTenantSubscription } = await import("./tenant-billing");
+      const tenant = await getTenantSubscription(prisma, tenantSmeId);
+      planTier = tenant.tier;
+      planStatus = tenant.status;
+      if (tenant.seatsUsed > 0) tenantSeats.push({ smeId: tenantSmeId, role: "OWNER" });
+    } catch {
+      // Table missing (pre-migration) — fall through to UserPlan values.
+    }
+  }
+
   return {
     id: user.id,
     email: user.email,
     fullName: user.fullName,
     role: user.role,
-    planTier: user.plan?.tier,
-    planStatus: user.plan?.status,
+    planTier,
+    planStatus,
     grantedRoles: user.roleAssignments.map((a) => a.role),
     usableRoles: [...usable],
     mustChangePassword: user.mustChangePassword,
+    tenantSmeId,
+    tenantSeats,
   };
 }
 

@@ -6,8 +6,9 @@ import {
   assertTier,
   resolveEntitlements,
 } from "@kora/auth/entitlements";
-import { APPS, BRAND } from "@kora/brand";
+import { APPS } from "@kora/brand";
 import { Badge, Card } from "@/components/ui";
+import { StartPlanButton } from "./start-plan-button";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Plans" };
@@ -23,10 +24,12 @@ const fmtKES = (n: number) => `KES ${n.toLocaleString("en-KE")}`;
  * `@kora/auth/entitlements`, the same source the access guards use, so the
  * price advertised here is the price that decides what unlocks.
  *
- * Upgrades are requested, never self-applied. `setUserPlan` is only called by
- * an admin or a verified payment webhook, so this page says how to get a tier
- * rather than setting it — otherwise anyone could post to the endpoint and
- * grant themselves Neobank.
+ * Upgrades are self-serve *trials*, never self-applied paid tiers. Starting a
+ * plan calls `/api/billing/checkout`, which opens a time-boxed TRIALING
+ * subscription (capped at Growth, so no one self-serves into Neobank). A paid
+ * tier still only activates through the M-Pesa callback or an admin — a forged
+ * POST can at most start a trial that expires on its own, never grant a paid
+ * money-touching plan.
  */
 export default async function PlansPage() {
   const user = await getSessionUser();
@@ -110,7 +113,11 @@ export default async function PlansPage() {
               key={tier}
               className={isCurrent ? "ring-2 ring-brand-500" : ""}
               title={t.name}
-              hint={t.price === 0 ? "Free" : `${fmtKES(t.price)} per month`}
+              hint={
+                t.price === 0
+                  ? "Free"
+                  : `${fmtKES(t.price)} / mo · ${fmtKES(t.yearlyPrice)} / yr`
+              }
             >
               {t.popular && (
                 <Badge className="mb-2 bg-brand-50 text-brand-800 ring-brand-500/30">
@@ -121,6 +128,11 @@ export default async function PlansPage() {
               <p className="text-3xl font-semibold tabular-nums text-ink-900">
                 {t.price === 0 ? "Free" : fmtKES(t.price)}
               </p>
+              {t.price > 0 && (
+                <p className="mt-0.5 text-xs text-ink-500">
+                  {`or ${fmtKES(t.yearlyPrice)} / year — two months free`}
+                </p>
+              )}
 
               <p className="mt-3 text-xs font-medium uppercase tracking-wide text-ink-500">
                 Apps
@@ -130,6 +142,10 @@ export default async function PlansPage() {
                   <Badge key={a}>{APPS[a].name}</Badge>
                 ))}
               </div>
+              {/* Enforced caps — same source as the guards and the billing page. */}
+              <p className="mt-3 border-t border-ink-100 pt-3 text-xs text-ink-500">
+                {`${t.limits.seats < 0 ? "Unlimited" : t.limits.seats} staff · ${t.limits.products < 0 ? "unlimited" : t.limits.products} products · ${t.limits.salesPerMonth < 0 ? "unlimited" : t.limits.salesPerMonth} sales/mo · ${t.limits.tills < 0 ? "unlimited" : t.limits.tills} tills`}
+              </p>
 
               {t.roles.length > 0 && (
                 <>
@@ -159,18 +175,18 @@ export default async function PlansPage() {
                 <p className="mt-4 rounded-lg bg-brand-50 px-3 py-2 text-center text-sm font-medium text-brand-800">
                   Your current plan
                 </p>
+              ) : user ? (
+                <StartPlanButton
+                  tier={tier}
+                  cycle="MONTHLY"
+                  label={`Start ${t.name} trial`}
+                />
               ) : (
                 <a
-                  href={
-                    user
-                      ? `mailto:${BRAND.supportEmail}?subject=${encodeURIComponent(
-                          `Upgrade to ${t.name}`,
-                        )}`
-                      : "/register"
-                  }
+                  href="/register"
                   className="mt-4 block rounded-lg border border-ink-300 px-3 py-2 text-center text-sm font-medium text-ink-700 hover:bg-ink-100"
                 >
-                  {user ? `Request ${t.name}` : "Create an account"}
+                  Create an account
                 </a>
               )}
             </Card>
@@ -179,8 +195,9 @@ export default async function PlansPage() {
       </div>
 
       <p className="text-xs text-ink-400">
-        Plan changes are applied by the Kora team and take effect immediately.
-        Downgrading removes extra roles but never deletes your trading history.
+        Starting a plan opens a free trial that lasts for the days shown on each
+        plan. Paid plans activate once payment clears. Downgrading removes extra
+        roles but never deletes your trading history.
       </p>
     </div>
   );

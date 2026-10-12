@@ -114,7 +114,11 @@ export async function setUserPlan(
     reason?: string;
   },
 ): Promise<{ tier: Tier; granted: GrantableRole[]; revoked: GrantableRole[] }> {
-  const status = input.status ?? "ACTIVE";
+  // `SubStatus` now includes TRIALING (tenant trials) but the generated
+  // `UserPlan` type only knows the pre-migration enum until `prisma generate`
+  // runs. Cast through string so tenant flows compile pre-migration; runtime
+  // values written here are always ACTIVE/PAST_DUE/CANCELLED/EXPIRED.
+  const status = (input.status ?? "ACTIVE") as string;
 
   const before = await db.userPlan.findUnique({
     where: { userId: input.userId },
@@ -126,7 +130,7 @@ export async function setUserPlan(
     create: {
       userId: input.userId,
       tier: input.tier,
-      status,
+      status: status as never,
       cycle: input.cycle ?? "MONTHLY",
       amount: input.amount ?? 0,
       currentPeriodEnd: input.currentPeriodEnd ?? null,
@@ -134,7 +138,7 @@ export async function setUserPlan(
     },
     update: {
       tier: input.tier,
-      status,
+      status: status as never,
       ...(input.cycle ? { cycle: input.cycle } : {}),
       ...(input.amount !== undefined ? { amount: input.amount } : {}),
       ...(input.currentPeriodEnd !== undefined
@@ -153,7 +157,7 @@ export async function setUserPlan(
       fromTier: before?.tier ?? null,
       toTier: input.tier,
       fromStatus: before?.status ?? null,
-      toStatus: status,
+      toStatus: status as never,
       amount: input.amount ?? 0,
       cycle: input.cycle ?? null,
       reason: input.reason ?? null,
@@ -161,7 +165,7 @@ export async function setUserPlan(
   });
 
   const { granted, revoked } = await syncRoleAssignments(db, input.userId, input.tier, {
-    status,
+    status: status as SubStatus,
     reason: input.reason,
   });
 
@@ -175,6 +179,11 @@ export async function setUserPlan(
  * who signs up gets SalesPilot and has to be moved up by an admin. Auto-granting
  * a paid tier on sign-up would let anyone self-serve into the Neobank
  * surfaces, which are the ones that touch money.
+ *
+ * The 90-day *trial* is a separate, time-boxed grant that lives on the tenant
+ * subscription (see `provisionTenantSubscription`), not here — this legacy
+ * `UserPlan` row is the fallback the session reads only when the SaaS tenant
+ * tables are absent, so it stays on FREE/ACTIVE and never becomes the trial.
  */
 export async function provisionNewUser(
   db: Db,

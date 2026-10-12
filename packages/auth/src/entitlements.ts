@@ -17,8 +17,8 @@
 /** Mirrors the `kora.PlanTier` enum. */
 export type Tier = "FREE" | "STANDARD" | "METAL";
 
-/** Mirrors the `kora.SubscriptionStatus` enum. */
-export type SubStatus = "ACTIVE" | "PAST_DUE" | "CANCELLED" | "EXPIRED";
+/** Mirrors the `kora.SubscriptionStatus` enum (now incl. TRIALING). */
+export type SubStatus = "ACTIVE" | "PAST_DUE" | "CANCELLED" | "EXPIRED" | "TRIALING";
 
 /** Mirrors the `kora.UserRole` enum, minus the ADMIN staff role. */
 export type Role = "SME" | "SUPPLIER" | "CUSTOMER";
@@ -29,6 +29,7 @@ const ALL_STATUSES: readonly SubStatus[] = [
   "PAST_DUE",
   "CANCELLED",
   "EXPIRED",
+  "TRIALING",
 ];
 
 /** Narrow an untrusted value to a tier, or null. */
@@ -76,6 +77,8 @@ export type TierDefinition = {
   name: string;
   /** Monthly price in KES. The platform is Kenya-priced, so this is not USD. */
   price: number;
+  /** Yearly price in KES (12× monthly minus 2 months free). Billed via M-Pesa. */
+  yearlyPrice: number;
   /** Products unlocked at this tier, cheapest first. */
   apps: readonly AppKey[];
   /** Secondary roles this tier entitles, beyond the primary role. */
@@ -83,6 +86,28 @@ export type TierDefinition = {
   /** Marketing bullets for the pricing page. */
   features: readonly string[];
   popular?: boolean;
+  limits: TierLimits;
+};
+
+/**
+ * Enforced SaaS caps per tier.
+ *
+ * `-1` means unlimited. Every cap is checked server-side before the write —
+ * the UI hides the button, the API returns 402 with the tier that unlocks it.
+ * Limits live here (not in the DB) so pricing changes are a one-file edit
+ * that pricing page, guards and APIs all read together.
+ */
+export type TierLimits = {
+  /** Team seats including the owner. FREE=3 honours the old "3 staff" copy. */
+  seats: number;
+  /** Active products the tenant may list. */
+  products: number;
+  /** Sales recorded per calendar month. */
+  salesPerMonth: number;
+  /** Tills the tenant may operate. */
+  tills: number;
+  /** Free trial length in days for a new tenant. 0 = no trial. */
+  trialDays: number;
 };
 
 export const TIERS: Record<Tier, TierDefinition> = {
@@ -90,6 +115,7 @@ export const TIERS: Record<Tier, TierDefinition> = {
     tier: "FREE",
     name: "Starter",
     price: 0,
+    yearlyPrice: 0,
     apps: ["salespilot"],
     roles: [],
     features: [
@@ -97,11 +123,13 @@ export const TIERS: Record<Tier, TierDefinition> = {
       "Up to 3 staff accounts",
       "Community support",
     ],
+    limits: { seats: 3, products: 50, salesPerMonth: 200, tills: 1, trialDays: 0 },
   },
   STANDARD: {
     tier: "STANDARD",
     name: "Growth",
     price: 2500,
+    yearlyPrice: 25000,
     apps: ["salespilot", "swiftpos"],
     roles: ["SUPPLIER"],
     features: [
@@ -112,11 +140,13 @@ export const TIERS: Record<Tier, TierDefinition> = {
       "Email support",
     ],
     popular: true,
+    limits: { seats: 15, products: 1000, salesPerMonth: 5000, tills: 5, trialDays: 90 },
   },
   METAL: {
     tier: "METAL",
     name: "Enterprise",
     price: 7500,
+    yearlyPrice: 75000,
     apps: ["salespilot", "swiftpos", "neobank"],
     roles: ["SUPPLIER", "CUSTOMER"],
     features: [
@@ -125,6 +155,7 @@ export const TIERS: Record<Tier, TierDefinition> = {
       "Buy on credit as a customer",
       "Dedicated account manager",
     ],
+    limits: { seats: -1, products: -1, salesPerMonth: -1, tills: -1, trialDays: 90 },
   },
 };
 
@@ -137,9 +168,10 @@ export const TIER_ORDER: readonly Tier[] = ["FREE", "STANDARD", "METAL"] as cons
  * PAST_DUE is a grace period: the account keeps working while billing is
  * chased. CANCELLED and EXPIRED revoke access but keep the tier recorded, so
  * the UI can say "your Enterprise plan ended" rather than pretending the user
- * is on Starter.
+ * is on Starter. TRIALING behaves like ACTIVE until `trialEndsAt` — a trial
+ * that lapsed is treated as EXPIRED by the tenant resolver, not here.
  */
-const ACCESS_STATUSES: readonly SubStatus[] = ["ACTIVE", "PAST_DUE"];
+const ACCESS_STATUSES: readonly SubStatus[] = ["ACTIVE", "PAST_DUE", "TRIALING"];
 
 export function statusGrantsAccess(status: SubStatus | null | undefined): boolean {
   return !!status && ACCESS_STATUSES.includes(status);
@@ -224,5 +256,36 @@ export type AppAccessInput = {
 export function appAccess(input: AppAccessInput, app: AppKey): boolean {
   if (!statusGrantsAccess(input.status)) return false;
   return appsForTier(input.tier).includes(app);
+}
+
+/**
+ * SaaS tier caps, for limit enforcement and upgrade prompts.
+ *
+ * `-1` means unlimited. Returns null for an unknown tier so callers degrade
+ * to "no access" instead of throwing inside a page render.
+ */
+export function limitsForTier(tier: Tier | null | undefined): TierLimits | null {
+  return (tier && TIERS[tier]?.limits) ?? null;
+}
+
+/** True when `used` has hit an enforced cap (`-1` never caps). */
+export function isAtLimit(limit: number, used: number): boolean {
+  return limit >= 0 && used >= limit;
+}
+
+/** Billing cadences the tenant checkout accepts. Mirrors `BillingCycle`. */
+export const BILLING_CYCLES = ["MONTHLY", "YEARLY"] as const;
+export type BillingCycle = (typeof BILLING_CYCLES)[number];
+
+export function assertCycle(value: unknown): BillingCycle | null {
+  return (BILLING_CYCLES as readonly string[]).includes(value as string)
+    ? (value as BillingCycle)
+    : null;
+}
+
+/** Price for a tier on a cycle. Yearly = 10× monthly (2 months free). */
+export function priceForCycle(tier: Tier, cycle: BillingCycle): number {
+  const def = TIERS[tier];
+  return cycle === "YEARLY" ? def.yearlyPrice : def.price;
 }
 

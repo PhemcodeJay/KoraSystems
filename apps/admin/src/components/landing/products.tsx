@@ -16,12 +16,15 @@ type ProductKey = "swiftpos" | "salespilot" | "neobank";
 const PRODUCTS: {
   key: ProductKey;
   variant: KoraMarkVariant;
+  /** The problem this product exists to close, shown as the card's eyebrow. */
+  solves: string;
   bullets: string[];
   signedInHref: string;
 }[] = [
   {
     key: "swiftpos",
     variant: "green",
+    solves: "Sells, even offline",
     bullets: [
       "Offline-first point of sale that never misses a sale",
       "Barcode scanning and stock control",
@@ -32,6 +35,7 @@ const PRODUCTS: {
   {
     key: "salespilot",
     variant: "gold",
+    solves: "Shows what sells, and proves it",
     bullets: [
       "Sales analytics that show what actually moves",
       "AI demand forecasting and restock alerts",
@@ -42,6 +46,7 @@ const PRODUCTS: {
   {
     key: "neobank",
     variant: "blue",
+    solves: "Moves money, on one ledger",
     bullets: [
       "Business wallet and one balanced ledger",
       "Working-capital loans against your record",
@@ -57,7 +62,7 @@ export function Products({ signedIn }: { signedIn: boolean }) {
       <SectionHeading
         eyebrow="Products"
         title="Three products. One platform."
-        sub="SwiftPOS, SalesPilot and Neobank share one account, one ledger and one sign-in."
+        sub="Each product closes a gap — SwiftPOS sells, SalesPilot shows, Neobank moves the money — on one account, one ledger and one sign-in."
       />
       <div className="mt-10 grid gap-5 md:grid-cols-3">
         {PRODUCTS.map((p) => {
@@ -69,7 +74,12 @@ export function Products({ signedIn }: { signedIn: boolean }) {
             >
               <div className="flex items-center gap-3">
                 <KoraLogo size={44} rounded={11} variant={p.variant} />
-                <h3 className="text-lg font-semibold text-ink-900">{app.name}</h3>
+                <div>
+                  <h3 className="text-lg font-semibold text-ink-900">{app.name}</h3>
+                  <p className="text-xs font-medium uppercase tracking-wide text-brand-700">
+                    {p.solves}
+                  </p>
+                </div>
               </div>
               <p className="mt-3 text-sm text-ink-600">{app.description}</p>
               <ul className="mt-4 flex-1 space-y-2 text-sm text-ink-600">

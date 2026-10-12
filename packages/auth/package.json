@@ -13,7 +13,10 @@
     "./middleware": "./src/middleware.ts",
     "./password": "./src/password.ts",
     "./entitlements": "./src/entitlements.ts",
-    "./entitlement-sync": "./src/entitlement-sync.ts"
+    "./entitlement-sync": "./src/entitlement-sync.ts",
+    "./tenant-billing": "./src/tenant-billing.ts",
+    "./tenant-lifecycle": "./src/tenant-lifecycle.ts",
+    "./tenant-usage": "./src/tenant-usage.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

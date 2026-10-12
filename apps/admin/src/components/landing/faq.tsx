@@ -23,7 +23,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "What does it cost?",
-    a: "Start free on SalesPilot. Growth adds SwiftPOS from KES 2,500/month, and Enterprise adds Neobank from KES 7,500/month. The first month is free on every paid plan.",
+    a: "Start free on SalesPilot. Growth adds SwiftPOS from KES 2,500/month, and Enterprise adds Neobank from KES 7,500/month. Every paid plan starts with a 90-day free trial.",
   },
   {
     q: "Is my data safe?",

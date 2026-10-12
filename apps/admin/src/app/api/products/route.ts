@@ -127,6 +127,27 @@ export async function POST(request: Request) {
     }
   }
 
+  // SaaS product cap: enforced best-effort so pre-migration DBs keep working.
+  // When the tenant tables exist, a tenant at its cap gets a 402 naming the
+  // upgrade tier instead of a silent extra product.
+  if (smeId && !scope.isAdmin) {
+    try {
+      const { getTenantSubscription } = await import("@kora/auth/tenant-billing");
+      const { limitExceeded } = await import("@kora/auth/tenant-usage");
+      const sub = await getTenantSubscription(prisma, smeId);
+      const used = await prisma.product.count({ where: { smeId, isActive: true } });
+      const check = limitExceeded(sub.tier, "products", used);
+      if (!check.ok) {
+        return NextResponse.json(
+          { error: check.error, limit: check.limit, used: check.used, upgradeTo: check.upgradeTo },
+          { status: 402 },
+        );
+      }
+    } catch {
+      // Tenant tables missing — skip the cap, keep the write working.
+    }
+  }
+
   const product = await prisma.product.create({
     data: {
       smeId: smeId!,

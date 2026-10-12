@@ -52,6 +52,13 @@ export type SessionUser = {
    * became the account's permanent one — the reset existed only on paper.
    */
   mustChangePassword?: boolean;
+  /**
+   * SaaS tenant the user belongs to (owner's SME id, or first team seat).
+   * Null for non-SME roles and pre-migration rows.
+   */
+  tenantSmeId?: string | null;
+  /** Active team seats: `{ smeId, role }` with role OWNER|MANAGER|CASHIER. */
+  tenantSeats?: { smeId: string; role: string }[];
 };
 
 type SessionPayload = {

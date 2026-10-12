@@ -3,6 +3,9 @@
 // users, invoices, payments, suppliers, subscriptions, reports).
 generator client {
   provider = "prisma-client-js"
+  // Co-locate the generated client with this package so its engine lookup
+  // (relative to the client package) survives the app's server bundle.
+  output   = "../generated/client"
 }
 
 datasource db {
@@ -45,6 +48,29 @@ enum SubscriptionStatus {
   PAST_DUE
   CANCELLED
   EXPIRED
+  // Trialing tenants behave like ACTIVE until `trialEndsAt`. Kept as its own
+  // status so the UI can say "14 days left in trial" instead of "active".
+  TRIALING
+
+  @@schema("kora")
+}
+
+/// Role a team seat holds inside one SME tenant. Owner-only actions
+/// (billing, inviting owners) check for OWNER; day-to-day management allows
+/// OWNER + MANAGER; till work allows all three.
+enum SmeMemberRole {
+  OWNER
+  MANAGER
+  CASHIER
+
+  @@schema("kora")
+}
+
+/// Billing cadence for a tenant subscription. Stored as an enum (not a free
+/// string) so a typo can never create a "MONTLY" plan that bills forever.
+enum BillingCycle {
+  MONTHLY
+  YEARLY
 
   @@schema("kora")
 }
@@ -227,6 +253,7 @@ model User {
   roleAssignments    UserRoleAssignment[]
   plan               UserPlan?
   subscriptionEvents SubscriptionEvent[]
+  smeMemberships     SmeMember[]
   // Sales-agent pipeline. `owner` is the user who works the lead; `sme` ties it
   // to the business so a future team seat inherits the pipeline instead of it
   // being trapped on one person's account.
@@ -301,6 +328,16 @@ model SME {
   subscriptionAmount Decimal            @default(2500) @map("subscription_amount") @db.Decimal(14, 2)
   subscriptionCycle  String             @default("MONTHLY") @map("subscription_cycle")
 
+  // ── SaaS tenant billing (source of truth lives on SmeSubscription) ──────
+  // The flat `subscriptionStatus/Amount/Cycle` columns above are legacy
+  // per-owner mirrors, kept so old reads keep working. New code resolves
+  // tier/status from `subscriptions` (tenant-level) with fallback to the
+  // owner's UserPlan, then to these mirrors. Members join via `members`;
+  // every charge/refund is an auditable SmeBillingEvent row.
+  members       SmeMember[]
+  subscriptions SmeSubscription[]
+  billingEvents SmeBillingEvent[]
+
   tills         Till[]
   products      Product[]
   sales         Sale[]
@@ -319,7 +356,81 @@ model SME {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([onboardingStatus])
+  @@index([subscriptionStatus])
   @@map("smes")
+  @@schema("kora")
+}
+
+/// One seat inside an SME tenant. The owner row is created at registration;
+/// further seats are invites accepted by email. `userId` is nullable so an
+/// invite can exist before the person has an account — it is bound on accept.
+model SmeMember {
+  id        String       @id @default(cuid())
+  smeId     String       @map("sme_id")
+  sme       SME          @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  userId    String?      @map("user_id")
+  user      User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email     String
+  role      SmeMemberRole @default(CASHIER)
+  isActive  Boolean      @default(true) @map("is_active")
+  invitedBy String?      @map("invited_by")
+  joinedAt  DateTime     @default(now()) @map("joined_at")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  @@unique([smeId, email])
+  @@index([smeId, isActive])
+  @@index([userId])
+  @@map("sme_members")
+  @@schema("kora")
+}
+
+/// Tenant-level subscription. Exactly one ACTIVE-or-TRIALING row per SME at a
+/// time is enforced in application code (not a partial unique index, which
+/// Neon/Postgres would allow but Prisma cannot express portably). History is
+/// preserved: downgrades/cancels close the old row and open a new one.
+model SmeSubscription {
+  id               String             @id @default(cuid())
+  smeId            String             @map("sme_id")
+  sme              SME                @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  tier             PlanTier           @default(FREE)
+  status           SubscriptionStatus @default(TRIALING)
+  cycle            BillingCycle       @default(MONTHLY)
+  amount           Decimal            @default(0) @db.Decimal(14, 2)
+  trialEndsAt      DateTime?          @map("trial_ends_at")
+  currentPeriodEnd DateTime?          @map("current_period_end")
+  cancelledAt      DateTime?          @map("cancelled_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  @@index([smeId, status])
+  @@index([status, currentPeriodEnd])
+  @@map("sme_subscriptions")
+  @@schema("kora")
+}
+
+/// Append-only billing ledger for a tenant: every subscription charge,
+/// refund, trial start and admin change lands here so "who billed what, when"
+/// is always answerable. `transactionReference` links to the double-entry
+/// Transaction when money actually moved through the ledger.
+model SmeBillingEvent {
+  id                   String   @id @default(cuid())
+  smeId                String   @map("sme_id")
+  sme                  SME      @relation(fields: [smeId], references: [id], onDelete: Cascade)
+  actorUserId          String?  @map("actor_user_id")
+  fromTier             PlanTier? @map("from_tier")
+  toTier               PlanTier? @map("to_tier")
+  fromStatus           SubscriptionStatus? @map("from_status")
+  toStatus             SubscriptionStatus? @map("to_status")
+  amount               Decimal  @default(0) @db.Decimal(14, 2)
+  cycle                BillingCycle? @map("billing_cycle")
+  reason               String?
+  mpesaReceipt         String?  @map("mpesa_receipt")
+  transactionReference String?  @map("transaction_reference")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  @@index([smeId, createdAt])
+  @@map("sme_billing_events")
   @@schema("kora")
 }
 

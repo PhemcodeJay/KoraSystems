@@ -18,6 +18,9 @@ dist/
 
 # database
 *.db
+# Prisma generates this per-machine (embeds absolute paths + the platform
+# engine); it is rebuilt by `pnpm db:generate` and must never be committed.
+packages/database/generated/
 *.db-journal
 
 # PHP (salespilot-crm) — dependencies and runtime data, never source

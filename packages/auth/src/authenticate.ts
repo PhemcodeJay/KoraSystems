@@ -85,6 +85,21 @@ export async function authenticate(
     data: { lastLoginAt: new Date() },
   });
 
+  // Bind pending team invites: an invite created before the account existed
+  // carries only the email. The delegate is cast because the generated client
+  // only knows `smeMember` after the SaaS migration + `prisma generate`.
+  try {
+    const seats = (prisma as unknown as Record<string, { updateMany(args: unknown): Promise<unknown> } | undefined>).smeMember;
+    if (seats) {
+      await seats.updateMany({
+        where: { email: normalisedEmail, userId: null, isActive: true },
+        data: { userId: user.id },
+      });
+    }
+  } catch {
+    // Pre-migration: no seats table yet.
+  }
+
   return {
     id: user.id,
     email: user.email,
@@ -195,9 +210,28 @@ export async function registerAccount(input: RegisterInput): Promise<RegisterRes
     });
 
     if (input.role === "SME") {
-      await prisma.sME.create({
+      const sme = await prisma.sME.create({
         data: { userId: user.id, businessName: input.businessName!.trim() },
+        select: { id: true },
       });
+      // SaaS tenant bootstrap: owner seat + trial row. Best-effort — the
+      // tables only exist after the SaaS migration, so a missing-table error
+      // must not fail registration itself.
+      //
+      // New SMEs start on a 90-day GROWTH trial, not the free tier: the landing
+      // page sells a "90-day free trial", and this is the one place that makes
+      // it real. Growth is the safe tier to trial — SalesPilot + SwiftPOS, no
+      // Neobank — so a self-serve signup still cannot reach the money-touching
+      // surfaces. The row is written TRIALING with trialEndsAt = now + 90d
+      // (from TIERS.STANDARD.limits.trialDays); when it lapses,
+      // getTenantSubscription reports EXPIRED and access falls back, so the
+      // trial can never become an unpaid paid-plan by standing still.
+      try {
+        const { provisionTenantSubscription } = await import("./tenant-lifecycle");
+        await provisionTenantSubscription(prisma, sme.id, user.id, email, "STANDARD");
+      } catch {
+        // Pre-migration: UserPlan below is the billing source of truth.
+      }
     } else if (input.role === "SUPPLIER") {
       await prisma.supplier.create({
         data: { userId: user.id, companyName: input.companyName!.trim() },

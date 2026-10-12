@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/landing/site-header";
 import { Hero } from "@/components/landing/hero";
 import { Problem } from "@/components/landing/problem";
 import { Statement } from "@/components/landing/statement";
+import { Comparison } from "@/components/landing/comparison";
 import { Stats } from "@/components/landing/stats";
 import { Products } from "@/components/landing/products";
 import { Features } from "@/components/landing/features";
@@ -46,6 +47,7 @@ export default async function LandingPage() {
         <Hero signedIn={signedIn} />
         <Problem />
         <Statement />
+        <Comparison />
         <Stats />
         <Products signedIn={signedIn} />
         <Features />

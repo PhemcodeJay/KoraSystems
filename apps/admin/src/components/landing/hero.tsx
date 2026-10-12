@@ -56,7 +56,7 @@ export function Hero({ signedIn }: { signedIn: boolean }) {
           </div>
 
           <p className="mt-4 text-sm text-ink-500">
-            First month free · No card required · Built for M-Pesa
+            90-day free trial · No card required · Built for M-Pesa
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-500">

@@ -1,11 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/client";
 
 /**
  * Re-exported so consumers can type query filters precisely, e.g.
  * `const where: Prisma.RefundWhereInput = ...`. Typed `where` clauses are what
  * let the compiler catch a scoping filter aimed at the wrong relation.
  */
-export { Prisma } from "@prisma/client";
+export { Prisma } from "../generated/client";
 
 /**
  * Single shared Prisma client.

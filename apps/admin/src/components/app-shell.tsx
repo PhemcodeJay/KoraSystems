@@ -63,6 +63,8 @@ const SECTIONS: Array<{ group: string; items: NavItem[] }> = [
       { href: "/sme/customers", label: "Customers", icon: "☺", roles: ["SME"] },
       { href: "/sme/suppliers", label: "Suppliers", icon: "⛟", roles: ["SME"] },
       { href: "/sme/onboarding", label: "Setup", icon: "⚙", roles: ["SME"] },
+      { href: "/team", label: "Team", icon: "☺", roles: ["SME"] },
+      { href: "/billing", label: "Billing", icon: "◈", roles: ["SME"] },
     ],
   },
   {
