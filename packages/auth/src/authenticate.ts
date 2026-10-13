@@ -39,6 +39,21 @@ function supabaseClient() {
  * to current parameters here, so the work factor can be raised without asking
  * anyone to reset a password.
  */
+/**
+ * Whether the shared demo-password mode is active.
+ *
+ * Outside production this is simply "is `KORA_DEMO_PASSWORD` set". In
+ * production it takes a second, deliberate opt-in — `KORA_ALLOW_DEMO_LOGIN=true`
+ * — so that a `.env` copied from a demo host cannot silently let anyone sign
+ * in as any account (admin included) with one shared password. An env var
+ * alone cannot prevent that: copying files is exactly how accidents happen.
+ */
+export function demoLoginEnabled(): boolean {
+  if (!process.env.KORA_DEMO_PASSWORD) return false;
+  if (process.env.NODE_ENV !== "production") return true;
+  return process.env.KORA_ALLOW_DEMO_LOGIN === "true";
+}
+
 export async function authenticate(
   email: string,
   password: string,
@@ -64,8 +79,9 @@ export async function authenticate(
 
   // 2. Demo override. Separate message paths are irrelevant to the caller —
   //    both return null — so a wrong password never reveals which accounts
-  //    have real passwords set.
-  const demoPassword = process.env.KORA_DEMO_PASSWORD;
+  //    have real passwords set. `demoLoginEnabled()` refuses the override in
+  //    production unless a second, deliberate opt-in is present.
+  const demoPassword = demoLoginEnabled() ? process.env.KORA_DEMO_PASSWORD : undefined;
   const demoMatches = !!demoPassword && password === demoPassword;
 
   if (!hashMatches && !demoMatches) return null;
@@ -158,7 +174,7 @@ export async function registerAccount(input: RegisterInput): Promise<RegisterRes
     };
   }
 
-  const demoMode = Boolean(process.env.KORA_DEMO_PASSWORD);
+  const demoMode = demoLoginEnabled();
   let id: string | undefined;
   let authUserId: string;
 
@@ -277,6 +293,11 @@ export type DemoAccount = {
  * than 71 identical logins.
  */
 export async function listDemoAccounts(): Promise<DemoAccount[]> {
+  // The sign-in screen's account picker is a demo affordance. Without demo
+  // mode it would expose every seeded account (admin included) on a public
+  // production login page, so it goes away with the rest of demo mode.
+  if (!demoLoginEnabled()) return [];
+
   const [smes, suppliers, customers, admin] = await Promise.all([
     prisma.sME.findMany({
       include: {

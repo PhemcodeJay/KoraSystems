@@ -1529,6 +1529,24 @@ async function resetGenerated(smes: Seeded[]) {
 }
 
 async function main() {
+  // The seed writes the shared demo password into every account as a REAL
+  // hash (`upsertUser`), so unlike the demo-login override those accounts
+  // would keep signing in with it in production even though demo mode is off.
+  // Refuse here unless a second, deliberate opt-in is present — same
+  // two-key pattern as `demoLoginEnabled()` in @kora/auth.
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.KORA_SEED_ALLOW_PRODUCTION !== "true"
+  ) {
+    console.error(
+      "Refusing to seed a production database.\n" +
+        "The demo dataset creates accounts whose password is the shared demo\n" +
+        "one, stored as a real hash that stays valid after demo mode is off.\n" +
+        "If you really mean it, re-run with KORA_SEED_ALLOW_PRODUCTION=true.",
+    );
+    process.exit(1);
+  }
+
   console.log(`Seeding ${BRAND.name} demo dataset...`);
   console.log(
     `  history: ${DAYS_OF_HISTORY} days | fee: KES ${PLATFORM_FEE} | subscription: KES ${SUBSCRIPTION_AMOUNT}`,

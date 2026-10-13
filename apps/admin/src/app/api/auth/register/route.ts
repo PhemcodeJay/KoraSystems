@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
-import { registerAccount } from "@kora/auth/authenticate";
+import { demoLoginEnabled, registerAccount } from "@kora/auth/authenticate";
 import { SESSION_COOKIE, createSessionToken, sessionCookieOptions } from "@kora/auth/session";
 import { HOME_FOR_ROLE } from "@kora/auth/guards";
 
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
-  const demoMode = Boolean(process.env.KORA_DEMO_PASSWORD);
+  const demoMode = demoLoginEnabled();
   cookies().set(SESSION_COOKIE, createSessionToken(result.user), sessionCookieOptions);
   return NextResponse.json(
     { ok: true, role: result.user.role, home: HOME_FOR_ROLE[result.user.role], demoMode },

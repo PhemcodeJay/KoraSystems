@@ -185,8 +185,10 @@ export const api = {
   savingsWithdraw: { method: "POST", path: "/api/savings/withdraw" },
   savingsTxns: { method: "GET", path: "/api/savings/transactions" },
   tills: { method: "GET", path: "/api/tills" },
-  tillOpen: { method: "POST", path: "/api/till/open" },
-  tillClose: { method: "POST", path: "/api/till/close" },
+  // No tillOpen/tillClose entries: `/api/till/open` and `/api/till/close`
+  // were never implemented (only `GET /api/till` exists), so the catalog
+  // must not advertise them — a truthless entry is a broken button waiting
+  // to happen.
   inventoryAdjust: { method: "POST", path: "/api/inventory/adjust" },
   inventoryAdjustments: { method: "GET", path: "/api/inventory/adjustments" },
   receipts: { method: "GET", path: "/api/receipts" },
