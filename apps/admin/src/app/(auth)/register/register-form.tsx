@@ -129,7 +129,7 @@ export function RegisterForm({ demoMode }: { demoMode: boolean }) {
           <label htmlFor="reg-password" className={labelCls}>Password</label>
           <input id="reg-password" type="password" autoComplete="new-password"
             value={password} onChange={(e) => setPassword(e.target.value)}
-            className={inputCls} required minLength={8} />
+            className={inputCls} required minLength={10} />
           {demoMode && (
             <p className="mt-1 text-xs text-ink-500">
               Demo environment: every account signs in with the shared password{" "}

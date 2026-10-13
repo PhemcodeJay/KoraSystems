@@ -62,8 +62,8 @@ export function Problem() {
         ))}
       </ul>
       <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-ink-500">
-        None of this is a failure of effort. It's a missing operating system — and
-        that's exactly what we built.
+        None of this is a failure of effort. It’s a missing operating system — and
+        that’s exactly what we built.
       </p>
     </Section>
   );

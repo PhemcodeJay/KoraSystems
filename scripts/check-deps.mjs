@@ -128,25 +128,36 @@ if (existsSync(schemaPath)) {
   const models = [...schema.matchAll(/^model\s+(\w+)\s*\{/gm)].map((m) => m[1]);
 
   // The generated client lives in the pnpm store path, not the repo.
-  const clientDir = join(
+  const storeDts = join(
     virtualStore,
     readdirSync(virtualStore).find((e) => e.startsWith("@prisma+client@")) ?? "",
     "node_modules",
     ".prisma",
     "client",
+    "index.d.ts",
   );
-  const dts = join(clientDir, "index.d.ts");
-
-  if (!existsSync(dts)) {
+  // …but this repo sets a custom `output` (packages/database/generated/client),
+  // so THAT is the copy the app typechecks against. Check whichever exists.
+  const repoDts = join(root, "packages", "database", "generated", "client", "index.d.ts");
+  const probe = (p) => {
+    if (!existsSync(p)) return null;
+    const src = readFileSync(p, "utf8");
+    return models.filter((m) => !src.includes(`export type ${m}WhereInput`));
+  };
+  const storeMissing = probe(storeDts);
+  const repoMissing = probe(repoDts);
+  if (storeMissing === null && repoMissing === null) {
     console.error(
-      "\nPrisma client is not generated (.prisma/client/index.d.ts missing).\n" +
+      "\nPrisma client is not generated (no index.d.ts in the store or in packages/database/generated/client).\n" +
         "Fix: pnpm db:generate",
     );
     process.exit(1);
   }
 
-  const generated = readFileSync(dts, "utf8");
-  const missing = models.filter((m) => !generated.includes(`export type ${m}WhereInput`));
+  // Stale only when EVERY copy we found is missing the same models — a stale
+  // store copy alongside a fresh repo copy is the normal custom-output state.
+  const found = [storeMissing, repoMissing].filter((m) => m !== null);
+  const missing = found.length > 0 ? found.reduce((a, b) => a.filter((m) => b.includes(m))) : [];
   if (missing.length > 0) {
     console.error(
       `\nPrisma client is STALE — ${missing.length} model(s) in schema.prisma are not in the generated client:`,

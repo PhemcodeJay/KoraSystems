@@ -53,7 +53,9 @@ async function runTests() {
   // Auth: the gate must hold, then open
   console.log("");
   console.log("Auth");
-  const unauth = await fetch(`${BASE}/api/sales`);
+  // `redirect: "manual"` so the middleware's 307 to /login surfaces as 307
+  // instead of fetch silently following it and reporting /login's 200.
+  const unauth = await fetch(`${BASE}/api/sales`, { redirect: "manual" });
   assert(unauth.status >= 300, `GET /api/sales without session -> ${unauth.status} (blocked)`);
 
   const login = await fetch(`${BASE}/api/auth/login`, {

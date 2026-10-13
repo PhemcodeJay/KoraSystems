@@ -1,8 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
-import { demoLoginEnabled, registerAccount } from "@kora/auth/authenticate";
-import { SESSION_COOKIE, createSessionToken, sessionCookieOptions } from "@kora/auth/session";
+import { registerAccount } from "@kora/auth/authenticate";
+import {
+  SESSION_COOKIE,
+  createSessionToken,
+  sessionCookieOptions,
+} from "@kora/auth/session";
 import { HOME_FOR_ROLE } from "@kora/auth/guards";
+import { validatePasswordStrength } from "@kora/auth/password";
 
 const ROLES = ["SME", "SUPPLIER", "CUSTOMER"] as const;
 
@@ -48,11 +53,11 @@ export async function POST(request: NextRequest) {
   if (!EMAIL_RE.test(email)) {
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
-  if (password.length < 8) {
-    return NextResponse.json(
-      { error: "Password must be at least 8 characters." },
-      { status: 400 },
-    );
+  // One policy everywhere: same 10-char floor + common-password screen as
+  // change-password and admin reset (packages/auth/src/password.ts).
+  const weak = validatePasswordStrength(password);
+  if (weak) {
+    return NextResponse.json({ error: weak }, { status: 400 });
   }
   if (role === "SME" && !businessName) {
     return NextResponse.json({ error: "Enter your business name." }, { status: 400 });
@@ -75,10 +80,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
-  const demoMode = demoLoginEnabled();
   cookies().set(SESSION_COOKIE, createSessionToken(result.user), sessionCookieOptions);
   return NextResponse.json(
-    { ok: true, role: result.user.role, home: HOME_FOR_ROLE[result.user.role], demoMode },
+    { ok: true, role: result.user.role, home: HOME_FOR_ROLE[result.user.role] },
     { status: 201 },
   );
 }

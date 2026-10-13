@@ -46,7 +46,7 @@ function smtpConfigured(): boolean {
  * keeps a configured machine from delivering accidentally (reviews, demos),
  * `smtp` fails loudly if someone claims a transport they have not set up.
  */
-function useSmtp(): boolean {
+function smtpEnabled(): boolean {
   const forced = process.env.EMAIL_PROVIDER?.toLowerCase();
   if (forced === "simulated") return false;
   if (forced === "smtp") return true;
@@ -68,7 +68,7 @@ export async function sendEmail(input: {
   const to = input.to.trim();
   if (!isEmail(to)) throw new Error(`"${to}" is not a valid email address.`);
 
-  if (!useSmtp()) {
+  if (!smtpEnabled()) {
     if (process.env.EMAIL_PROVIDER?.toLowerCase() === "smtp" && !smtpConfigured()) {
       throw new Error(
         "EMAIL_PROVIDER=smtp but SMTP_HOST, SMTP_USER and SMTP_PASS are not all set.",

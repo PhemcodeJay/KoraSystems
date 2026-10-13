@@ -69,7 +69,7 @@ export function Statement() {
         </p>
         <p className="mx-auto mt-4 max-w-2xl text-base text-ink-300">
           Every gap above has an answer, and each is closed by the product built
-          for it. Here's which one does what.
+          for it. Here’s which one does what.
         </p>
 
         <dl className="mx-auto mt-10 grid max-w-4xl gap-x-8 gap-y-6 text-left sm:grid-cols-2">

@@ -49,6 +49,10 @@ function supabaseClient() {
  * alone cannot prevent that: copying files is exactly how accidents happen.
  */
 export function demoLoginEnabled(): boolean {
+  // One predicate for every demo gate (password override in `authenticate`,
+  // the login page account picker, the register hint). The two-key rule:
+  // in production the shared password ALSO needs KORA_ALLOW_DEMO_LOGIN=true,
+  // so a .env copied from a demo host cannot open every account by accident.
   if (!process.env.KORA_DEMO_PASSWORD) return false;
   if (process.env.NODE_ENV !== "production") return true;
   return process.env.KORA_ALLOW_DEMO_LOGIN === "true";
@@ -77,10 +81,12 @@ export async function authenticate(
   // 1. The account's own salted hash.
   const hashMatches = await verifyPassword(password, user.passwordHash);
 
-  // 2. Demo override. Separate message paths are irrelevant to the caller —
-  //    both return null — so a wrong password never reveals which accounts
-  //    have real passwords set. `demoLoginEnabled()` refuses the override in
-  //    production unless a second, deliberate opt-in is present.
+  // 2. Demo override. Checked SEPARATELY — not in the same `if` as the hash —
+  //    deliberately: verifying an scrypt hash costs ~100ms, so `hashMatches ||
+  //    demoMatches` would answer wrong-password attempts on accounts WITH a
+  //    real hash ~100ms slower than on accounts WITHOUT one, letting an
+  //    attacker enumerate which accounts have real passwords set. Two
+  //    sequential checks keep the timing identical either way.
   const demoPassword = demoLoginEnabled() ? process.env.KORA_DEMO_PASSWORD : undefined;
   const demoMatches = !!demoPassword && password === demoPassword;
 
