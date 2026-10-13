@@ -43,8 +43,8 @@ async function main() {
 
   const rows = [];
   const targets = [
-    ...PAGES.map((p) => ["PAGE", p] as const),
-    ...GETS.map((p) => ["GET", p] as const),
+    ...PAGES.map((p) => ["PAGE", p]),
+    ...GETS.map((p) => ["GET", p]),
   ];
   for (const [kind, path] of targets) {
     try {
