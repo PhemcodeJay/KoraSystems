@@ -22,8 +22,8 @@ const PAINS: Pain[] = [
     emoji: "📒",
     title: "You're flying blind",
     body:
-      "Sales, stock and profit live in a notebook, a calculator and your memory. Finding your best line from your worst means counting stock by hand.",
-    cost: "You reorder what you like, not what sells — and margin leaks out the back door.",
+      "Sales, stock and profit live in a notebook, a calculator and your memory. You count stock by hand to find your best line — and you reorder on what sells, not on what's being ordered.",
+    cost: "Margin leaks out the back door while you're still counting.",
   },
   {
     emoji: "🏦",
@@ -41,9 +41,9 @@ const PAINS: Pain[] = [
   },
   {
     emoji: "💸",
-    title: "Software built for someone else",
+    title: "Enterprise platforms built for someone else",
     body:
-      "Enterprise systems cost a fortune, need a desktop, and assume the network never drops. That was never the shop you run.",
+      "ATG, ATG Connect and Africa Trade Exchange are built for governments and enterprises — they solve trade finance, not the shop floor. Their tools assume a desk, a network and a finance team. They never run your till.",
     cost: "You pay for tools sized for a head office — or fall back to paper the moment data runs out.",
   },
 ];
@@ -53,8 +53,8 @@ export function Problem() {
     <Section>
       <SectionHeading
         eyebrow="The problem"
-        title="Small business runs on paper, memory and guesswork."
-        sub="Africa's shops create real value every day — but the tools around them were built for someone else. Four gaps hold almost every owner back."
+        title="The platforms built for enterprise don't serve the shop."
+        sub="Africa's shops create real value every day — but the tools around them weren't built for them. ATG, ATG Connect and Africa Trade Exchange are built for governments and enterprises — they don't run a shop. Four gaps hold almost every owner back."
       />
       <ul className="mx-auto mt-8 grid max-w-5xl gap-4 sm:grid-cols-2">
         {PAINS.map((p) => (

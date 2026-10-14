@@ -1,4 +1,4 @@
-import { Section, Container } from "./ui";
+﻿import { Section, Container } from "./ui";
 import { KoraLogo, APPS, type KoraMarkVariant } from "@kora/brand";
 
 /**
@@ -31,7 +31,7 @@ const FIXES: Fix[] = [
     problem: "You're flying blind",
     products: [{ key: "salespilot", variant: "gold" }],
     solution:
-      "SalesPilot turns every sale into a live view of profit, stock and demand — and forecasts what will sell before you order.",
+      "SalesPilot turns every sale into a live view of profit, stock and demand — updated the moment you ring it up. You reorder on what sells, not on what was ordered.",
   },
   {
     problem: "Good business, invisible to lenders",
@@ -40,7 +40,7 @@ const FIXES: Fix[] = [
       { key: "neobank", variant: "blue" },
     ],
     solution:
-      "Your real sales become a credit score in SalesPilot, then a working-capital loan you can draw on in Neobank. No collateral.",
+      "Your real sales become a credit score in SalesPilot, then a working-capital loan in Neobank — no collateral, because the data is yours.",
   },
   {
     problem: "Ten tools that don't talk",
@@ -49,13 +49,13 @@ const FIXES: Fix[] = [
       { key: "neobank", variant: "blue" },
     ],
     solution:
-      "One account and one balanced ledger across the till, payments, suppliers and lending — nothing to reconcile by hand.",
+      "One account and one balanced ledger across the till, payments, suppliers and lending. M-Pesa, wallet and cash on every receipt — nothing to reconcile by hand.",
   },
   {
-    problem: "Software built for someone else",
+    problem: "Enterprise platforms built for someone else",
     products: [{ key: "swiftpos", variant: "green" }],
     solution:
-      "SwiftPOS is mobile-first and offline-first, M-Pesa native — it runs on the phone in your shop, not a desktop in an office.",
+      "SwiftPOS is mobile-first and offline-first, M-Pesa native — it runs on the phone in your shop, not a desktop in an office. It's a shop-floor product, not a head-office one.",
   },
 ];
 
@@ -64,13 +64,11 @@ export function Statement() {
     <Section tone="dark">
       <Container className="text-center">
         <p className="mx-auto max-w-3xl text-2xl font-bold leading-snug sm:text-3xl">
-          SwiftPOS, SalesPilot and Neobank — the missing operating system for
-          your shop.
+          SwiftPOS, SalesPilot and Neobank — the complete operating system for
+          the shop floor.
         </p>
         <p className="mx-auto mt-4 max-w-2xl text-base text-ink-300">
-          Every gap above has an answer, and each is closed by the product built
-          for it. Here’s which one does what.
-        </p>
+          ATG, ATG Connect and Africa Trade Exchange serve trade finance for governments and enterprises. KoraSystems starts where the shop actually is � an offline-first till, a ledger that balances, and credit built on your own sales.</p>
 
         <dl className="mx-auto mt-10 grid max-w-4xl gap-x-8 gap-y-6 text-left sm:grid-cols-2">
           {FIXES.map((f) => (
