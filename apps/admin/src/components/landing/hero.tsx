@@ -26,7 +26,7 @@ export function Hero({ signedIn }: { signedIn: boolean }) {
           </h1>
           <p className="mt-5 max-w-xl text-lg text-ink-600">
             KoraSystems connects SMEs, suppliers, and customers in one platform.
-            Sales. Inventory. Payments. Lending. All in one place.
+            Sales, inventory, payment tracking and credit review in one place.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -90,7 +90,7 @@ function ProductMock() {
             <KoraLogo size={28} rounded={7} />
             <div>
               <p className="text-sm font-semibold text-ink-900">Mama Mboga Stores</p>
-              <p className="text-[11px] text-ink-500">Today · SwiftPOS</p>
+              <p className="text-[11px] text-ink-500">Example workspace · SwiftPOS</p>
             </div>
           </div>
           <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-700 ring-1 ring-inset ring-brand-600/20">
@@ -101,7 +101,7 @@ function ProductMock() {
         <div className="mt-4 grid grid-cols-3 gap-3">
           <MockStat label="Sales" value="KES 18.4k" tone="brand" />
           <MockStat label="Items" value="312" />
-          <MockStat label="Score" value="742" />
+          <MockStat label="Credit review" value="Human-led" />
         </div>
 
         <div className="mt-4 rounded-xl border border-ink-200 p-3">
@@ -119,8 +119,8 @@ function ProductMock() {
 
       {/* Floating credit-score chip, offset from the main card. */}
       <div className="absolute -bottom-5 -left-4 hidden rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 shadow-lg sm:block">
-        <p className="text-[11px] text-ink-500">Eligible for</p>
-        <p className="text-sm font-semibold text-brand-700">KES 120,000 loan</p>
+        <p className="text-[11px] text-ink-500">Credit decision support</p>
+        <p className="text-sm font-semibold text-brand-700">Human review required</p>
       </div>
     </div>
   );
@@ -169,4 +169,3 @@ function MockBar({
     </div>
   );
 }
-
