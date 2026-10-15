@@ -250,16 +250,19 @@ Sign in with any of these (password `Demo@1234`):
 
 ## Roadmap
 
-1. ~~Monorepo, database, ledger, demo data~~ ✅
-2. AI credit scoring + demand forecasting
-3. SME app (onboarding, dashboard, POS)
-4. Supplier portal
-5. Customer app
-6. Admin panel
-7. M-Pesa Daraja integration
-8. Offline-first POS
-9. Supplier mobile app
-10. Deploy
+The monorepo, database, ledger and demo data are complete. Remaining work is
+prioritized below:
+
+| Priority | Remaining work |
+|---|---|
+| 🔴 High | Finish AI credit scoring |
+| 🔴 High | Finish AI demand forecasting |
+| 🔴 High | Finish SME onboarding |
+| 🔴 High | Deploy to Vercel |
+| 🔴 High | Build landing page |
+| 🔴 High | Get first client |
+| 🟡 Medium | Integrate M-Pesa C2B |
+| 🟡 Medium | Build offline POS |
 
 ## Security note
 
