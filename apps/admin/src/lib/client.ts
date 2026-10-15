@@ -197,6 +197,7 @@ export const api = {
   ledgerTransactions: { method: "GET", path: "/api/ledger/transactions" },
   ledgerBalance: { method: "GET", path: "/api/ledger/balance" },
   salesPilotInsights: { method: "GET", path: "/api/sales-pilot/insights" },
+  salesForecast: { method: "GET", path: "/api/sales-pilot/forecast" },
   onboardingStep: { method: "POST", path: "/api/onboarding/step" },
   onboardingComplete: { method: "POST", path: "/api/onboarding/complete" },
   onboardingStatus: { method: "GET", path: "/api/onboarding/status" },

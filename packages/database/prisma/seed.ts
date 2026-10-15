@@ -21,6 +21,7 @@ try {
 }
 import { PrismaClient } from "../generated/client";
 import { BRAND } from "@kora/brand";
+import { scoreCredit, type CreditFactor } from "@kora/ai/commerce";
 import {
   bnplLegs,
   post,
@@ -691,51 +692,6 @@ async function seedCustomers() {
 }
 
 
-type Factor = { name: string; weight: number; score: number; note: string };
-
-/**
- * Placeholder credit scoring. Computes the same 10 factors the real engine
- * will, so the admin approval queue is fully exercisable. Milestone 2
- * replaces only this function, keeping the returned shape identical.
- */
-function placeholderScore(input: {
-  revenue90d: number;
-  salesCount90d: number;
-  retention: number;
-  yearsInBusiness: number;
-  activeLoan: boolean;
-  savingsBalance: number;
-  consistency: number;
-  growth: number;
-  riskBandOffset: number;
-}): { score: number; risk: "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH"; factors: Factor[] } {
-  const f: Factor[] = [];
-  const add = (name: string, weight: number, score: number, note: string) =>
-    f.push({ name, weight, score: Math.max(0, Math.min(100, Math.round(score))), note });
-
-  add("salesConsistency", 12, input.consistency, "How evenly revenue is spread across trading days");
-  add("revenueGrowth", 12, 50 + input.growth * 45, "Last 30 days vs the prior 30");
-  add("transactionVolume", 10, Math.min(100, input.salesCount90d / 4), "Number of transactions in 90 days");
-  add("customerRetention", 12, input.retention * 100, "Repeat buyer share");
-  add("paymentHistory", 14, input.activeLoan ? 62 : 82, input.activeLoan ? "Existing obligations present" : "No missed payments recorded");
-  add("businessAge", 8, Math.min(100, (input.yearsInBusiness / 10) * 100), `${input.yearsInBusiness} years trading`);
-  add("inventoryTurnover", 8, 60, "Stock movement vs sales");
-  add("debtToIncome", 14, input.activeLoan ? 48 : 85, input.activeLoan ? "Debt outstanding" : "No active debt");
-  add("savingsBehaviour", 6, Math.min(100, (input.savingsBalance / 60000) * 100), "Savings balance relative to size");
-  add("supplierRelations", 4, 70, "Supplier payment record");
-
-  const totalWeight = f.reduce((s, x) => s + x.weight, 0);
-  const weighted = f.reduce((s, x) => s + x.score * x.weight, 0) / totalWeight;
-
-  // Spread scores around the middle of the band so a demo queue shows a
-  // realistic mix of LOW / MEDIUM / HIGH rather than everything clustered
-  // at the top. Real scoring (Milestone 2) does not need this.
-  const adjusted = weighted * (1 + input.riskBandOffset);
-  const score = Math.max(120, Math.min(940, Math.round(adjusted * 10)));
-  const risk = score >= 750 ? "LOW" : score >= 580 ? "MEDIUM" : score >= 420 ? "HIGH" : "VERY_HIGH";
-  return { score, risk, factors: f };
-}
-
 function interestFor(score: number): number {
   if (score >= 750) return 0.16;
   if (score >= 650) return 0.19;
@@ -764,13 +720,20 @@ async function seedCredit(smes: Seeded[], adminUserId: string) {
     const salesCount90d = agg._count._all;
     const monthlyRevenue = revenue90d / 3;
 
-    const withCustomer = await prisma.sale.count({
+    const salesWithCustomer = await prisma.sale.findMany({
       where: { smeId: s.sme.id, soldAt: { gte: since90 }, customerId: { not: null } },
+      select: { customerId: true },
     });
-    const retention = salesCount90d > 0 ? withCustomer / salesCount90d : 0;
+    const customerFrequency = new Map<string, number>();
+    for (const sale of salesWithCustomer) {
+      if (sale.customerId) {
+        customerFrequency.set(sale.customerId, (customerFrequency.get(sale.customerId) ?? 0) + 1);
+      }
+    }
+    const repeatCustomers = [...customerFrequency.values()].filter((count) => count > 1).length;
+    const retention = customerFrequency.size > 0 ? repeatCustomers / customerFrequency.size : 0;
 
     const savings = await prisma.savings.findUnique({ where: { smeId: s.sme.id } });
-    const activeLoan = (await prisma.loan.count({ where: { smeId: s.sme.id } })) > 0;
     const smeRow = await prisma.sME.findUniqueOrThrow({
       where: { id: s.sme.id },
       select: { yearsInBusiness: true },
@@ -782,16 +745,14 @@ async function seedCredit(smes: Seeded[], adminUserId: string) {
       select to_char(sold_at, 'YYYY-MM-DD') as d, sum(total_amount)::text as amt
       from kora.sales where sme_id = ${s.sme.id} and sold_at >= ${since90}
       group by 1 order by 1`;
-    const amounts = dailyRows.map((r) => Number(r.amt));
-    const mean = amounts.length
-      ? amounts.reduce((a, b) => a + b, 0) / amounts.length
-      : 0;
-    const variance =
-      amounts.length > 1
-        ? amounts.reduce((a, b) => a + (b - mean) ** 2, 0) / amounts.length
-        : 0;
+    const dailyTotals = new Map(dailyRows.map((row) => [row.d, Number(row.amt)]));
+    const amounts = Array.from({ length: 90 }, (_, offset) => {
+      const date = new Date(since90.getTime() + offset * 86400000);
+      return dailyTotals.get(date.toISOString().slice(0, 10)) ?? 0;
+    });
+    const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+    const variance = amounts.reduce((sum, amount) => sum + (amount - mean) ** 2, 0) / amounts.length;
     const cv = mean > 0 ? Math.sqrt(variance) / mean : 2;
-    // CV 0 => perfectly even (100), CV 2+ => very erratic (0)
     const consistency = Math.max(0, Math.min(100, 100 - (cv / 2) * 100));
 
     // Revenue growth: last 30 days vs the 30 before it.
@@ -809,19 +770,62 @@ async function seedCredit(smes: Seeded[], adminUserId: string) {
     const prior = Number(halves[1]._sum.totalAmount ?? 0);
     const growth = prior > 0 ? (recent - prior) / prior : recent > 0 ? 1 : 0;
 
-    const { score, risk, factors } = placeholderScore({
-      revenue90d,
-      salesCount90d,
-      retention,
-      yearsInBusiness: smeRow.yearsInBusiness ?? 1,
-      activeLoan,
-      savingsBalance: Number(savings?.balance ?? 0),
-      consistency,
-      growth,
-      // Nudge each SME onto a different part of the band so the admin
-      // approval queue has a realistic spread to work with.
-      riskBandOffset: ((i % 5) - 2) * 0.11,
-    });
+    const [productTotals, soldUnits, activeLoans, repayments, invoices] = await Promise.all([
+      prisma.product.aggregate({
+        where: { smeId: s.sme.id, isActive: true },
+        _sum: { stockQuantity: true },
+      }),
+      prisma.saleItem.aggregate({
+        where: { sale: { smeId: s.sme.id, soldAt: { gte: since90 } } },
+        _sum: { quantity: true },
+      }),
+      prisma.loan.findMany({
+        where: { smeId: s.sme.id, status: { in: ["DISBURSED", "REPAYING", "DEFAULTED"] } },
+        select: { principal: true, amountRepaid: true },
+      }),
+      prisma.repayment.findMany({
+        where: { loan: { smeId: s.sme.id }, dueDate: { lte: new Date() } },
+        select: { status: true },
+      }),
+      prisma.invoice.findMany({
+        where: { smeId: s.sme.id },
+        select: { status: true },
+      }),
+    ]);
+    const currentStock = productTotals._sum.stockQuantity ?? 0;
+    const unitsSold = soldUnits._sum.quantity ?? 0;
+    const inventoryTurnover =
+      unitsSold + currentStock > 0 ? (unitsSold / (unitsSold + currentStock)) * 100 : 50;
+    const outstandingDebt = activeLoans.reduce(
+      (sum, loan) => sum + Math.max(0, Number(loan.principal) - Number(loan.amountRepaid)),
+      0,
+    );
+    const debtToIncome =
+      monthlyRevenue > 0
+        ? Math.max(0, 100 - (outstandingDebt / monthlyRevenue) * 20)
+        : outstandingDebt > 0 ? 0 : 65;
+    const paidRepayments = repayments.filter((repayment) => repayment.status === "PAID").length;
+    const paymentHistory =
+      repayments.length > 0 ? (paidRepayments / repayments.length) * 100 : 65;
+    const paidInvoices = invoices.filter((invoice) => invoice.status === "PAID").length;
+    const supplierRelations =
+      invoices.length > 0 ? (paidInvoices / invoices.length) * 100 : 60;
+    const savingsBalance = Number(savings?.balance ?? 0);
+    const savingsBehaviour =
+      monthlyRevenue > 0 ? Math.min(100, (savingsBalance / monthlyRevenue) * 100) : savingsBalance > 0 ? 50 : 0;
+    const factors: CreditFactor[] = [
+      { name: "salesConsistency", weight: 12, score: consistency, note: "Daily sales stability over 90 days, including non-trading days" },
+      { name: "revenueGrowth", weight: 12, score: 50 + growth * 45, note: "Revenue change over the latest 30 days versus the prior 30" },
+      { name: "transactionVolume", weight: 10, score: Math.min(100, salesCount90d / 4), note: `${salesCount90d} transactions in 90 days` },
+      { name: "customerRetention", weight: 12, score: retention * 100, note: "Share of identified customers with repeat purchases" },
+      { name: "paymentHistory", weight: 14, score: paymentHistory, note: `${paidRepayments} of ${repayments.length} due repayments paid on time` },
+      { name: "businessAge", weight: 8, score: Math.min(100, ((smeRow.yearsInBusiness ?? 0) / 10) * 100), note: `${smeRow.yearsInBusiness ?? 0} years trading` },
+      { name: "inventoryTurnover", weight: 8, score: inventoryTurnover, note: "Units sold relative to current stock and recent sales" },
+      { name: "debtToIncome", weight: 14, score: debtToIncome, note: `Outstanding principal KES ${Math.round(outstandingDebt).toLocaleString()} against monthly sales` },
+      { name: "savingsBehaviour", weight: 6, score: savingsBehaviour, note: `Savings KES ${Math.round(savingsBalance).toLocaleString()} relative to monthly sales` },
+      { name: "supplierRelations", weight: 4, score: supplierRelations, note: `${paidInvoices} of ${invoices.length} supplier invoices paid` },
+    ];
+    const { score, risk, factors: scoredFactors } = scoreCredit(factors);
 
     const maxLoan = maxLoanFor(score, monthlyRevenue);
     const rate = interestFor(score);
@@ -840,9 +844,9 @@ async function seedCredit(smes: Seeded[], adminUserId: string) {
             : risk === "MEDIUM"
               ? ["Improve repayment consistency to access a lower rate", "Build savings balance to improve terms"]
               : ["Reduce existing obligations before applying", "Grow transaction history over the next 90 days"],
-        factors: factors as never,
-        model: "deterministic-v1",
-        isPlaceholder: true,
+        factors: scoredFactors as never,
+        model: "explainable-credit-v1",
+        isPlaceholder: false,
       },
     });
 
@@ -1633,4 +1637,3 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
-

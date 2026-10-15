@@ -148,6 +148,9 @@ importers:
 
   packages/database:
     dependencies:
+      '@kora/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@kora/brand':
         specifier: workspace:*
         version: link:../brand

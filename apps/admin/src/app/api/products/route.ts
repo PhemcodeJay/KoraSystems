@@ -148,21 +148,35 @@ export async function POST(request: Request) {
     }
   }
 
-  const product = await prisma.product.create({
-    data: {
-      smeId: smeId!,
-      name,
-      sku,
-      price,
-      stockQuantity: stock,
-      category:
-        typeof body?.category === "string" && body.category.trim()
-          ? body.category.trim()
-          : null,
-      costPrice: costPrice !== null && Number.isFinite(costPrice) ? costPrice : null,
-      lowStockThreshold:
-        Number.isInteger(threshold) && threshold >= 0 ? threshold : 10,
-    },
+  const product = await prisma.$transaction(async (tx) => {
+    const created = await tx.product.create({
+      data: {
+        smeId: smeId!,
+        name,
+        sku,
+        price,
+        stockQuantity: stock,
+        category:
+          typeof body?.category === "string" && body.category.trim()
+            ? body.category.trim()
+            : null,
+        costPrice: costPrice !== null && Number.isFinite(costPrice) ? costPrice : null,
+        lowStockThreshold:
+          Number.isInteger(threshold) && threshold >= 0 ? threshold : 10,
+      },
+    });
+
+    if (!scope.isAdmin && smeId) {
+      await tx.sME.updateMany({
+        where: {
+          id: smeId,
+          onboardingStep: "PRODUCTS",
+          onboardingStatus: "IN_PROGRESS",
+        },
+        data: { onboardingStep: "PAYMENTS" },
+      });
+    }
+    return created;
   });
 
   return NextResponse.json({ data: product }, { status: 201 });

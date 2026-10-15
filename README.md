@@ -248,21 +248,45 @@ path.
 Sign in with any of these (password `Demo@1234`):
 `admin@demo.kora.co.ke` · `sme1@demo.kora.co.ke` · `supplier1@demo.kora.co.ke` · `customer1@demo.kora.co.ke`
 
+## Vercel deployment
+
+The Vercel project should use `apps/admin` as its Root Directory. Its
+[`vercel.json`](./apps/admin/vercel.json) builds the Next.js app together with
+its workspace dependencies, including Prisma client generation. Enable access
+to workspace files outside the app directory if Vercel prompts for it.
+
+Set environment variables in Vercel for each deployment target:
+
+- `DATABASE_URL` and `DIRECT_URL` for the production Postgres database.
+- `SESSION_SECRET` with a fresh, random value of at least 32 characters.
+- `NEXT_PUBLIC_APP_URL` set to the deployed HTTPS origin.
+- `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` for production
+  authentication. Keep the service-role key server-side only.
+- Leave `KORA_DEMO_PASSWORD` and `KORA_ALLOW_DEMO_LOGIN` unset in production.
+- Keep `DISBURSEMENT_PROVIDER=simulated` until a licensed partner is configured.
+
+Apply database migrations from a trusted environment before sending production
+traffic (`pnpm --filter @kora/database migrate:deploy`). A successful build
+prepares the app; it does not itself create or deploy a Vercel project.
+
 ## Roadmap
 
-The monorepo, database, ledger and demo data are complete. Remaining work is
-prioritized below:
+The monorepo, database, ledger and demo data are complete. The landing page and
+SME onboarding flow are implemented. Scoring and forecasting are now
+explainable, data-driven decision-support features; credit decisions still
+require human review.
 
-| Priority | Remaining work |
+| Work | Status |
 |---|---|
-| 🔴 High | Finish AI credit scoring |
-| 🔴 High | Finish AI demand forecasting |
-| 🔴 High | Finish SME onboarding |
-| 🔴 High | Deploy to Vercel |
-| 🔴 High | Build landing page |
-| 🔴 High | Get first client |
-| 🟡 Medium | Integrate M-Pesa C2B |
-| 🟡 Medium | Build offline POS |
+| Monorepo, database, ledger and demo data | ✅ Done |
+| Explainable credit scoring with human review | ✅ Implemented |
+| Sales-based demand forecasts | ✅ Implemented |
+| SME onboarding and recovery across refreshes | ✅ Implemented |
+| Public landing page | ✅ Built; deployment pending |
+| Deploy to Vercel | 🔴 Project setup and live deployment still required |
+| Get first client | 🔴 Requires a qualified prospect and approved outreach |
+| Integrate M-Pesa C2B | 🟡 Requires Daraja configuration and payment-allocation decisions |
+| Build offline POS | 🟡 Not started |
 
 ## Security note
 

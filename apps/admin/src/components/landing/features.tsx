@@ -13,28 +13,28 @@ type Feature = { icon: string; title: string; body: string };
 const FEATURES: Feature[] = [
   {
     icon: "🤖",
-    title: "AI Demand Forecasting",
-    body: "See what will sell before you order. Know exactly when you'll run out — and what to restock.",
+    title: "Demand Forecasting",
+    body: "Estimate product demand from completed sales and use stockout and reorder estimates to guide restocking.",
   },
   {
     icon: "📊",
-    title: "Credit Score from Real Sales",
-    body: "Your trading history becomes a score a lender can trust. No collateral required.",
+    title: "Explainable Credit Scoring",
+    body: "Sales and repayment signals produce a score with factor-by-factor explanations for human review.",
   },
   {
     icon: "💰",
-    title: "M-Pesa Native",
-    body: "Collect and disburse straight from the Daraja API. Money in, money out, one ledger.",
+    title: "M-Pesa STK Collections",
+    body: "Request a customer payment through Daraja when credentials are configured; loan disbursement stays gated.",
   },
   {
-    icon: "📴",
-    title: "Works Offline",
-    body: "Keep selling when the network drops. Everything syncs the moment you reconnect.",
+    icon: "🧾",
+    title: "Auditable Transactions",
+    body: "Track sales, stock movements and payment states with role-scoped records.",
   },
   {
     icon: "🔒",
-    title: "Bank-Grade Security",
-    body: "Encrypted end to end, signed sessions, and role-based access on every screen.",
+    title: "Role-Based Access",
+    body: "Sessions and role checks protect business, supplier, customer and admin surfaces.",
   },
   {
     icon: "📱",

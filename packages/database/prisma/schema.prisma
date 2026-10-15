@@ -985,11 +985,10 @@ model CreditScore {
   // Per-factor breakdown: sales consistency, revenue growth, volume,
   // retention, payment history, business age, inventory turnover,
   // debt-to-income, savings behaviour, supplier relations.
-  // Milestone 1 writes deterministic placeholder factors; Milestone 2
-  // swaps the computation without changing this shape.
+  // Versioned, explainable score factors used for human review.
   factors         Json
-  model           String          @default("deterministic-v1")
-  isPlaceholder   Boolean         @default(true) @map("is_placeholder")
+  model           String          @default("explainable-credit-v1")
+  isPlaceholder   Boolean         @default(false) @map("is_placeholder")
 
   createdAt DateTime @default(now()) @map("created_at")
 

@@ -15,6 +15,7 @@ import {
   templateDraft,
   AiUnavailableError,
 } from "../src/index.ts";
+import { forecastDemand, scoreCredit } from "../src/commerce.ts";
 
 /** Clear every provider key so "no AI configured" is deterministic. */
 function clearKeys() {
@@ -106,4 +107,47 @@ test("templateDraft survives a lead with no contact name", () => {
   );
   assert.ok(draft.body.startsWith("Hi there,"));
   assert.ok(draft.subject.length > 0, "subject never comes out empty");
+});
+
+test("credit score clamps factors, is stable, and keeps risk bands ordered", () => {
+  const factors = [
+    { name: "sales", weight: 70, score: 120, note: "strong sales" },
+    { name: "repayment", weight: 30, score: -5, note: "poor repayment" },
+  ];
+  const result = scoreCredit(factors);
+  assert.equal(result.score, 700);
+  assert.equal(result.risk, "MEDIUM");
+  assert.deepEqual(result.factors.map((factor) => factor.score), [100, 0]);
+  assert.throws(() => scoreCredit([{ name: "x", weight: 0, score: 50, note: "" }]));
+});
+
+test("demand forecast detects weekly patterns and recommends replenishment", () => {
+  const observations = [];
+  const start = new Date("2026-01-01T00:00:00.000Z");
+  for (let i = 0; i < 56; i++) {
+    const date = new Date(start.getTime() + i * 86_400_000);
+    observations.push({ date, quantity: date.getUTCDay() === 0 ? 8 : 2 });
+  }
+  const forecast = forecastDemand(
+    observations,
+    10,
+    20,
+    new Date("2026-02-26T00:00:00.000Z"),
+  );
+  assert.equal(forecast.confidence, "HIGH");
+  assert.ok(forecast.forecast7d > 14);
+  assert.ok(forecast.forecast30d > forecast.forecast7d);
+  assert.equal(forecast.daysUntilStockout, 3);
+  assert.ok(forecast.recommendedOrder > 0);
+});
+
+test("demand forecast returns no signal for sparse history", () => {
+  const forecast = forecastDemand(
+    [{ date: "2026-01-01", quantity: 10 }, { date: "2026-01-15", quantity: 3 }],
+    5,
+    10,
+  );
+  assert.equal(forecast.confidence, "LOW");
+  assert.equal(forecast.daysUntilStockout, null);
+  assert.equal(forecast.recommendedOrder, 0);
 });

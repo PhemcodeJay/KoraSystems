@@ -1,12 +1,8 @@
 import { Section, SectionHeading, Check } from "./ui";
 
 /**
- * M-Pesa band.
- *
- * Payments are the headline for a Kenya-first product, so this gets its own
- * band split into Money In (C2B) and Money Out (B2C) — the two Daraja flows the
- * platform actually implements. The two-column layout makes the direction of
- * money obvious.
+ * M-Pesa band. Real collections require Daraja credentials; disbursement stays
+ * simulated until a licensed partner is configured.
  */
 export function Mpesa() {
   return (
@@ -16,45 +12,45 @@ export function Mpesa() {
           <SectionHeading
             align="left"
             eyebrow="Payments"
-            title="M-Pesa, built in — not bolted on."
-            sub="KoraSystems speaks Daraja natively. Money in and money out on one balanced ledger, so your books always agree with your wallet."
+            title="M-Pesa collections, with money movement gated."
+            sub="Customer-initiated STK payments can be enabled with Daraja credentials. Loan disbursement remains simulated until a licensed partner is in place."
           />
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
             <FlowColumn
-              direction="Money in"
+              direction="Collections"
               tone="brand"
-              items={["Customer payments", "Sales at the till", "Loan repayments", "Pay-in-parts (BNPL)"]}
+              items={["Customer STK prompts", "Asynchronous payment callbacks", "Sandbox-first configuration"]}
             />
             <FlowColumn
-              direction="Money out"
+              direction="Disbursement"
               tone="blue"
-              items={["Loan disbursement", "Supplier payouts", "Shopper refunds", "Savings withdrawals"]}
+              items={["Simulated by default", "No customer funds move", "Licensed partner required for production"]}
             />
           </div>
         </div>
 
         <div className="rounded-2xl border border-ink-200 bg-ink-50/70 p-6 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-widest text-ink-500">
-            Live from the ledger
+            Payment lifecycle
           </p>
-          <ul className="mt-4 space-y-3">
+          <ol className="mt-4 space-y-3">
             {[
-              ["M-Pesa received", "KES 4,200", "text-brand-700"],
-              ["Loan disbursed", "KES 120,000", "text-blue-800"],
-              ["Supplier paid", "KES 38,500", "text-brand-700"],
+              ["1", "Create a pending payment request", "text-brand-700"],
+              ["2", "Daraja prompts the customer's phone", "text-blue-800"],
+              ["3", "A callback records the payment result", "text-brand-700"],
             ].map(([label, amount, tone]) => (
               <li
                 key={label}
                 className="flex items-center justify-between rounded-lg border border-ink-200 bg-white px-4 py-3"
               >
                 <span className="text-sm text-ink-700">{label}</span>
-                <span className={`text-sm font-semibold tabular-nums ${tone}`}>{amount}</span>
+                <span className={`text-sm font-semibold ${tone}`}>{amount}</span>
               </li>
             ))}
-          </ul>
+          </ol>
           <p className="mt-4 text-xs text-ink-500">
-            Every entry posts to the same double-entry ledger — sales, loans and
-            payouts reconcile automatically.
+            Without Daraja credentials, collection requests are explicitly
+            simulated and no money moves.
           </p>
         </div>
       </div>

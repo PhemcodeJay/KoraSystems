@@ -1,4 +1,4 @@
-import { prisma } from "@kora/database";
+import { prisma, scoreSmeCredit } from "@kora/database";
 import { withAuth, requireScope } from "@kora/auth";
 import { NextResponse } from "next/server";
 
@@ -15,7 +15,8 @@ export async function POST(request: Request) {
   if (auth.response) return auth.response;
 
   const scope = await requireScope("SME", "ADMIN");
-  if (!scope.smeId) {
+  const smeId = scope.smeId;
+  if (!smeId) {
     return NextResponse.json(
       { error: "No business is linked to this account." },
       { status: 403 },
@@ -57,27 +58,52 @@ export async function POST(request: Request) {
     );
   }
 
+  const assessment = await scoreSmeCredit(prisma, smeId);
   const interestRate = 0.12;
   const totalPayable = principal * (1 + (interestRate * termMonths) / 12);
 
-  const loan = await prisma.loan.create({
-    data: {
-      loanNumber: `LN-${Date.now().toString(36).toUpperCase()}`,
-      smeId: scope.smeId,
-      principal,
-      interestRate,
-      termMonths,
-      totalPayable,
-      status: "PENDING_REVIEW",
-      purpose: body.purpose ?? null,
-      // Marked simulated: no funds move until a licensed partner is wired up.
-      simulated: true,
-      blockedReason:
-        process.env.DISBURSEMENT_PROVIDER === "mpesa"
-          ? null
-          : "No licensed disbursement partner configured",
-    },
+  const { score, risk, maxLoan, factors, model, explanation, recommendations } = assessment;
+  const loan = await prisma.$transaction(async (tx) => {
+    const createdLoan = await tx.loan.create({
+      data: {
+        loanNumber: `LN-${Date.now().toString(36).toUpperCase()}`,
+        smeId,
+        principal,
+        interestRate,
+        termMonths,
+        totalPayable,
+        status: "PENDING_REVIEW",
+        purpose: body.purpose ?? null,
+        creditScoreAtApplication: score,
+        // No amount is approved until a human reviewer makes that decision.
+        // Marked simulated: no funds move until a licensed partner is wired up.
+        simulated: true,
+        blockedReason:
+          process.env.DISBURSEMENT_PROVIDER === "mpesa"
+            ? null
+            : "No licensed disbursement partner configured",
+      },
+    });
+    await tx.creditScore.create({
+      data: {
+        smeId,
+        loanId: createdLoan.id,
+        score,
+        riskLevel: risk,
+        maxLoan,
+        interestRate: assessment.interestRate,
+        factors: factors as never,
+        model,
+        explanation,
+        recommendations,
+        isPlaceholder: false,
+      },
+    });
+    return createdLoan;
   });
 
-  return NextResponse.json({ data: loan }, { status: 201 });
+  return NextResponse.json(
+    { data: loan, creditScore: { score, risk, maxLoan, explanation, factors } },
+    { status: 201 },
+  );
 }

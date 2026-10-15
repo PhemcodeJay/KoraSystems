@@ -1,35 +1,17 @@
 import { Section, SectionHeading } from "./ui";
 
-/**
- * Testimonials band.
- *
- * Three short quotes from the three sides of the market. Illustrative copy for
- * now — swap for real, attributed quotes (with permission) before launch.
- */
-
-type Testimonial = { quote: string; name: string; role: string; initials: string };
-
-const TESTIMONIALS: Testimonial[] = [
+const USE_CASES = [
   {
-    quote:
-      "I stopped guessing what to order. The forecast tells me when I'll run out, and the loan covers the gap.",
-    name: "Grace Wanjiru",
-    role: "Mama Mboga, Nairobi",
-    initials: "GW",
+    title: "For SME retailers",
+    body: "Record sales, manage stock, and review demand estimates from recent trading history.",
   },
   {
-    quote:
-      "Orders come through clear and paid. No more chasing shops by phone at the end of the month.",
-    name: "David Ochieng",
-    role: "Distributor, Kisumu",
-    initials: "DO",
+    title: "For suppliers",
+    body: "Follow orders and invoices in a shared workflow with the businesses you serve.",
   },
   {
-    quote:
-      "I split my groceries into parts and earn points every time I shop. Paying is one tap on M-Pesa.",
-    name: "Aisha Mohammed",
-    role: "Shopper, Mombasa",
-    initials: "AM",
+    title: "For shoppers",
+    body: "Browse participating SME catalogues and submit a cart from the customer storefront.",
   },
 ];
 
@@ -37,33 +19,18 @@ export function Testimonials() {
   return (
     <Section>
       <SectionHeading
-        eyebrow="Loved across the market"
-        title="Trusted by the people who use it every day."
+        eyebrow="Designed for commerce"
+        title="One platform for the people behind each transaction."
+        sub="These are product workflows, not customer testimonials."
       />
       <div className="mt-10 grid gap-5 md:grid-cols-3">
-        {TESTIMONIALS.map((t) => (
+        {USE_CASES.map((item) => (
           <figure
-            key={t.name}
-            className="flex flex-col rounded-xl border border-ink-200 bg-white p-6 shadow-sm"
+            key={item.title}
+            className="rounded-xl border border-ink-200 bg-white p-6 shadow-sm"
           >
-            <div aria-hidden className="text-accent-500">
-              {"★★★★★"}
-            </div>
-            <blockquote className="mt-3 flex-1 text-sm text-ink-700">
-              “{t.quote}”
-            </blockquote>
-            <figcaption className="mt-4 flex items-center gap-3">
-              <span
-                aria-hidden
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-800"
-              >
-                {t.initials}
-              </span>
-              <span className="text-sm">
-                <span className="block font-semibold text-ink-900">{t.name}</span>
-                <span className="block text-ink-500">{t.role}</span>
-              </span>
-            </figcaption>
+            <h3 className="text-base font-semibold text-ink-900">{item.title}</h3>
+            <p className="mt-2 text-sm text-ink-600">{item.body}</p>
           </figure>
         ))}
       </div>

@@ -25,6 +25,7 @@ export async function GET() {
       onboardingStep: true,
       onboardingStatus: true,
       mpesaTill: true,
+      mpesaPaybill: true,
     },
   });
   if (!sme) {

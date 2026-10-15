@@ -27,13 +27,22 @@ export async function POST(request: Request) {
 
   const body = (await request.json().catch(() => ({}))) as {
     mpesaTill?: unknown;
+    mpesaPaybill?: unknown;
   };
   const till =
     typeof body.mpesaTill === "string" ? body.mpesaTill.trim() : "";
+  const paybill =
+    typeof body.mpesaPaybill === "string" ? body.mpesaPaybill.trim() : "";
+  if ([till, paybill].some((shortcode) => shortcode && !/^\d{4,12}$/.test(shortcode))) {
+    return NextResponse.json(
+      { error: "Enter a valid M-Pesa till or Paybill shortcode using digits only." },
+      { status: 400 },
+    );
+  }
 
   const existing = await prisma.sME.findUnique({
     where: { id: scope.smeId },
-    select: { businessName: true },
+    select: { businessName: true, onboardingStep: true },
   });
   if (!existing) {
     return NextResponse.json({ error: "Business not found." }, { status: 404 });
@@ -44,11 +53,27 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+  if (existing.onboardingStep !== "PAYMENTS") {
+    return NextResponse.json(
+      { error: "Complete your business information and add a product first." },
+      { status: 400 },
+    );
+  }
+  const productCount = await prisma.product.count({
+    where: { smeId: scope.smeId, isActive: true },
+  });
+  if (productCount === 0) {
+    return NextResponse.json(
+      { error: "Add at least one product before completing setup." },
+      { status: 400 },
+    );
+  }
 
   const sme = await prisma.sME.update({
     where: { id: scope.smeId },
     data: {
       ...(till ? { mpesaTill: till } : {}),
+      ...(paybill ? { mpesaPaybill: paybill } : {}),
       onboardingStep: "COMPLETE",
       onboardingStatus: "APPROVED",
     },

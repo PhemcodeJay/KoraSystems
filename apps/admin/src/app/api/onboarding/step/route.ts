@@ -43,6 +43,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unknown onboarding step." }, { status: 400 });
   }
 
+  const current = await prisma.sME.findUnique({
+    where: { id: scope.smeId },
+    select: { onboardingStep: true },
+  });
+  if (!current) {
+    return NextResponse.json({ error: "Business not found." }, { status: 404 });
+  }
+  if (current.onboardingStep !== step || step === "COMPLETE") {
+    return NextResponse.json(
+      { error: "Complete the current onboarding step before moving on." },
+      { status: 409 },
+    );
+  }
+  if (step === "PRODUCTS") {
+    const productCount = await prisma.product.count({
+      where: { smeId: scope.smeId, isActive: true },
+    });
+    if (productCount === 0) {
+      return NextResponse.json(
+        { error: "Add at least one product before continuing." },
+        { status: 400 },
+      );
+    }
+  }
+
   const data = body?.data ?? {};
   const update: {
     businessName?: string;

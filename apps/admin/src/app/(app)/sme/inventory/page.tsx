@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, apiFetch, readError, fetchWrappedList } from "@/lib/client";
+import { api, apiFetch, apiJson, readError, fetchWrappedList } from "@/lib/client";
 import { fmtKES } from "@/lib/queries";
 import { Card, Empty, Table, Td, Th } from "@/components/ui";
 
@@ -13,6 +13,16 @@ type Product = {
   price: string | number;
   stockQuantity: number;
   lowStockThreshold: number;
+};
+
+type ProductForecast = Product & {
+  forecast: {
+    forecast7d: number;
+    forecast30d: number;
+    daysUntilStockout: number | null;
+    recommendedOrder: number;
+    confidence: "LOW" | "MEDIUM" | "HIGH";
+  };
 };
 
 type Mode =
@@ -58,10 +68,19 @@ export default function InventoryPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [forecasts, setForecasts] = useState<ProductForecast[]>([]);
+  const [forecastLoading, setForecastLoading] = useState(true);
+  const [forecastError, setForecastError] = useState("");
 
   const reload = () => fetchWrappedList<Product>(api.products.path).then(setProducts);
   useEffect(() => {
     reload().finally(() => setLoaded(true));
+  }, []);
+  useEffect(() => {
+    apiJson<ProductForecast[]>(api.salesForecast.path)
+      .then(setForecasts)
+      .catch((e) => setForecastError(e instanceof Error ? e.message : "Could not load demand forecasts."))
+      .finally(() => setForecastLoading(false));
   }, []);
 
   function open(next: Mode) {
@@ -204,6 +223,51 @@ return (
           {notice}
         </p>
       )}
+
+      <Card
+        title="Demand forecast"
+        hint="A 90-day, weekly-seasonal estimate from completed sales. Use it as a restocking aid, not a guarantee."
+      >
+        {forecastLoading ? (
+          <p className="text-sm text-ink-500">Calculating forecasts…</p>
+        ) : forecastError ? (
+          <p role="alert" className="text-sm text-red-700">{forecastError}</p>
+        ) : forecasts.length === 0 ? (
+          <Empty message="Add active products to see their demand forecasts." />
+        ) : (
+          <Table>
+            <thead className="bg-ink-50">
+              <tr>
+                <Th>Product</Th>
+                <Th className="text-right">Next 7 days</Th>
+                <Th className="text-right">Next 30 days</Th>
+                <Th className="text-right">Stockout estimate</Th>
+                <Th className="text-right">Suggested order</Th>
+                <Th>Confidence</Th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ink-100">
+              {forecasts.map((item) => (
+                <tr key={item.id}>
+                  <Td>
+                    <span className="font-medium text-ink-900">{item.name}</span>
+                    <span className="ml-2 text-xs text-ink-500">{item.sku}</span>
+                  </Td>
+                  <Td className="text-right">{Math.ceil(item.forecast.forecast7d)} units</Td>
+                  <Td className="text-right">{Math.ceil(item.forecast.forecast30d)} units</Td>
+                  <Td className="text-right">
+                    {item.forecast.daysUntilStockout === null
+                      ? "Not expected"
+                      : `${item.forecast.daysUntilStockout} days`}
+                  </Td>
+                  <Td className="text-right">{item.forecast.recommendedOrder} units</Td>
+                  <Td>{item.forecast.confidence.toLowerCase()}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </Card>
 
       {mode && (
         <Card

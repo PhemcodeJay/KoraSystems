@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, apiFetch, ApiError } from "@/lib/client";
+import { api, apiFetch, apiJson, ApiError } from "@/lib/client";
 import { Card } from "@/components/ui";
 
 type Step = "business" | "products" | "payments";
-type Status = { onboardingStep: string; businessName: string; mpesaTill: string | null };
+type Status = {
+  onboardingStep: string;
+  businessName: string;
+  mpesaTill: string | null;
+  mpesaPaybill: string | null;
+};
 
 const STEPS: Step[] = ["business", "products", "payments"];
 const LABELS: Record<Step, string> = {
@@ -44,22 +49,21 @@ export default function OnboardingPage() {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [mpesaTill, setMpesaTill] = useState("");
+  const [mpesaPaybill, setMpesaPaybill] = useState("");
 
   useEffect(() => {
-    fetch(api.onboardingStatus.path, { credentials: "same-origin" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        const s = d?.data;
-        if (!s) return;
+    apiJson<Status>(api.onboardingStatus.path)
+      .then((s) => {
         setStatus(s);
         setBusinessName(s.businessName ?? "");
         setMpesaTill(s.mpesaTill ?? "");
+        setMpesaPaybill(s.mpesaPaybill ?? "");
         if (s.onboardingStep === "COMPLETE") setDone(true);
         else if (s.onboardingStep === "PAYMENTS") setStep("payments");
         else if (s.onboardingStep === "PRODUCTS") setStep("products");
       })
-      .catch(() => {
-        // Offline or signed out — the wizard still works, errors surface on submit.
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : "Could not load onboarding status.");
       });
   }, []);
 
@@ -99,7 +103,7 @@ export default function OnboardingPage() {
       } else {
         await apiFetch(api.onboardingComplete.path, {
           method: "POST",
-          body: { mpesaTill },
+          body: { mpesaTill, mpesaPaybill },
         });
         setDone(true);
       }
@@ -239,15 +243,26 @@ export default function OnboardingPage() {
           {step === "payments" && (
             <>
               <p className="text-sm text-ink-500">
-                Link your M-Pesa till to receive payments. You can do this
-                later — the wizard completes without it.
+                Add a business Till or Paybill shortcode to receive direct
+                C2B payments. You can do this later — the wizard completes
+                without one.
               </p>
-              <input
-                className={input}
-                placeholder="M-Pesa till number (optional)"
-                value={mpesaTill}
-                onChange={(e) => setMpesaTill(e.target.value)}
-              />
+              <div className="space-y-3">
+                <input
+                  className={input}
+                  inputMode="numeric"
+                  placeholder="M-Pesa Till shortcode (optional)"
+                  value={mpesaTill}
+                  onChange={(e) => setMpesaTill(e.target.value)}
+                />
+                <input
+                  className={input}
+                  inputMode="numeric"
+                  placeholder="M-Pesa Paybill shortcode (optional)"
+                  value={mpesaPaybill}
+                  onChange={(e) => setMpesaPaybill(e.target.value)}
+                />
+              </div>
             </>
           )}
         </div>

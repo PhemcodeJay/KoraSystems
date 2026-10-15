@@ -6,6 +6,7 @@ import { PrismaClient } from "../generated/client";
  * let the compiler catch a scoping filter aimed at the wrong relation.
  */
 export { Prisma } from "../generated/client";
+export { scoreSmeCredit } from "./credit-score";
 
 /**
  * Single shared Prisma client.

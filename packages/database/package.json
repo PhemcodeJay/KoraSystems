@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@kora/ai": "workspace:*",
     "@kora/brand": "workspace:*",
     "@prisma/client": "^6.16.2"
   },
