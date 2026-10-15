@@ -1,304 +1,153 @@
-# KoraSystems — The Rhythm of African Commerce
+# KoraSystems
 
-Unified platform connecting SMEs, suppliers, and customers across Africa.
+The Rhythm of African Commerce
 
-## Architecture
+KoraSystems is a pnpm/Turborepo monorepo for an SME commerce platform. The
+workspace currently has one web application: a Next.js app in `apps/admin`
+that serves the platform UI and API on one origin. SwiftPOS, SalesPilot,
+Neobank, SME, supplier, customer, and admin surfaces are routes in that app;
+their presence does not mean every planned mobile or offline capability is
+available.
 
-Turborepo monorepo with pnpm workspaces.
+## What is implemented
 
-### Apps
+- SME sales, products, inventory, onboarding, and business dashboards.
+- Supplier and customer web surfaces, plus admin tools.
+- A double-entry ledger for recorded transactions.
+- Explainable, data-driven credit assessments. Loan applications still require
+  human review; scoring does not approve or disburse loans.
+- Sales-history demand estimates surfaced in inventory.
+- M-Pesa STK support when Daraja is configured.
+- M-Pesa C2B callback capture and manual reconciliation to a completed sale.
+  Callbacks are not cryptographically authenticated by this app. Verify the
+  receipt in the merchant statement or Daraja portal before reconciling it.
+- A public landing page.
 
-The platform is **one Next.js app on one port**. SwiftPOS, Neobank, SalesPilot,
-the user dashboard and the admin console are *routes inside* `apps/admin`, not
-separate servers — which is why there is a single port, a single session
-cookie, and no cross-origin calls between our own surfaces.
-
-| App | Port | Stack | Role |
-|---|---|---|---|
-| `apps/admin` | **3000** | Next.js 14 | **The platform.** The only app, and the only one with API routes. |
-
-It covers `/pos` (SwiftPOS), `/neobank/*`, `/sme/sales` (SalesPilot), `/apps`,
-`/customer/*`, `/supplier/*` and `/admin/*`.
-
-### Packages
-
-| Package | Role |
-|---|---|
-| `auth` | Sessions, role/scope guards, subscription entitlements, salted scrypt password hashing |
-| `brand` | Brand constants, product names, colours, page titles |
-| `database` | Prisma schema, migrations and client |
-| `disbursement` | M-Pesa disbursement gate (`simulated` provider by default) |
-| `ledger` | Balanced double-entry posting helpers |
-
-These five are the platform's entire dependency closure. The standalone client
-apps, the product facades, the Docker definitions and the vendored Express/PHP
-services have all been removed — they duplicated routes this app already served.
-
-## Quick Start
-
-```bash
-pnpm install              # install all workspace packages
-pnpm build                # build all packages
-pnpm dev                  # start the platform — one port (3000)
-pnpm typecheck            # typecheck all packages
-```
-
-## Brand
-
-- Name: KoraSystems
-- Tagline: "The Rhythm of African Commerce"
-- Colors: Green #10b981, Gold #f59e0b, Blue #1e40af
-- Products: SwiftPOS, SalesPilot, Neobank
-
----
-
-## What this is
-
-A pnpm + Turborepo monorepo holding the Kora platform:
-
-| Package | Purpose |
-|---|---|
-| `@kora/brand` | Brand constants and design tokens — single source of truth for the product name |
-| `@kora/database` | Prisma schema (23 models) on an isolated `kora` Postgres schema, plus the demo seed |
-| `@kora/ledger` | Double-entry ledger. Every money movement posts balanced legs |
-| `@kora/disbursement` | Loan disbursement with a fail-closed provider gate |
-| `@kora/shared` | Cross-app contract: entity types, `api` route map, Zod request schemas |
+Offline POS and native mobile applications are not implemented. Live
+deployment, merchant-side Daraja registration, and customer acquisition still
+require external setup and access.
 
 ## Repository layout
 
-```
+```text
 apps/
-  admin/         Kora Admin — Next.js 14. Hosts the platform API and the ledger.
-  pos/           KoraPOS facade   — Next.js 14, reads/writes via the admin API
-  bank/          KoraBank facade  — Next.js 14, reads/writes via the admin API
-  salespilot/    CRM facade       — Next.js 14, reads/writes via the admin API
-
-  swiftpos/      SwiftPOS service     — vendored, standalone (npm, not in workspace)
-  neobank/       Neobank service      — vendored, standalone (npm, not in workspace)
-  salespilot-crm/ SalesPilot CRM      — vendored, standalone (PHP/Composer)
+  admin/         Next.js platform UI and API
 packages/
-  auth/ brand/ database/ disbursement/ ledger/ shared/
+  ai/            Sales agent, scoring, and forecasting logic
+  auth/          Sessions, role/scope guards, and entitlements
+  brand/         Brand constants, product names, and design tokens
+  database/      Prisma schema, migrations, and demo seed
+  disbursement/  Fail-closed loan disbursement provider gate
+  ledger/        Balanced double-entry posting helpers
 ```
 
-### Facades vs. vendored services
+PostgreSQL tables are isolated in the Prisma `kora` schema. Configure database
+URLs with TLS enabled; `.env.example` shows the expected variables.
 
-The three product front ends exist in two layers, deliberately:
+## Requirements
 
-- **Facades** (`apps/pos`, `apps/bank`, `apps/salespilot`) are thin Next.js
-  apps that call the Kora admin API. Because they go through the admin API,
-  every sale, wallet movement and receipt lands on the double-entry ledger.
-  This is the supported platform path and the direction of travel.
-- **Vendored services** (`apps/swiftpos`, `apps/neobank`, `apps/salespilot-crm`)
-  are the original full-featured applications, kept deployable for existing
-  installations and for offline-first work.
+- Node.js 20 or newer
+- pnpm 9.15.9 (pinned in the root `package.json`)
+- PostgreSQL
 
-The vendored services are **excluded from the pnpm workspace** (see
-`pnpm-workspace.yaml`). They pin mutually incompatible stacks — React 18/Vite/
-Tailwind 3, React 19/Vite/Tailwind 4, and PHP — and forcing one hoisted
-dependency graph across all three would be fragile. Each installs and builds on
-its own; they share contracts through `@kora/shared` via tsconfig paths rather
-than via the package manager.
-
-## Brand
-
-All naming comes from `@kora/brand` — import `BRAND`, `APPS` and `pageTitle`
-rather than hardcoding strings, so a rebrand is a one-file change.
-
-```ts
-import { BRAND, APPS, COLOR, pageTitle } from "@kora/brand";
-
-BRAND.name;        // "KoraSystems"
-BRAND.tagline;     // "The Rhythm of African Commerce"
-BRAND.legalEntity; // "Kora Systems Inc"
-APPS.swiftpos.name; // "SwiftPOS"
-pageTitle("Platform overview", "admin"); // "Platform overview · Kora Admin"
-```
-
-### Palette
-
-Three brand colours, each a full 50–950 scale. The headline hex sits at the
-500 stop, except blue, which sits at 800 because a 500-step blue cannot carry
-white text for the banking surfaces.
-
-| Role | Hex | Scale stop | Tailwind | Used for |
-|---|---|---|---|---|
-| Green — primary | `#10b981` | `primary.500` | `brand-*` | Money moving, POS surfaces, success |
-| Gold — accent | `#f59e0b` | `accent.500` | `accent-*` | Calls to action, warnings, SalesPilot |
-| Blue — trust | `#1e40af` | `blue.800` | `blue-*` | Banking, documents, admin |
-
-```ts
-import { BRAND_COLORS } from "@kora/brand";
-
-BRAND_COLORS.green; // "#10b981"
-BRAND_COLORS.gold;  // "#f59e0b"
-BRAND_COLORS.blue;  // "#1e40af"
-```
-
-Semantic colours (`success`, `warning`, `info`) are derived from the brand
-scales rather than chosen independently, so status colour can never drift from
-the palette it sits beside.
-
-Design tokens ship as TypeScript (`COLOR`, `SPACING`, `RADIUS`, `FONT`,
-`RISK_COLOR`, `LOAN_STATUS_COLOR`) for Expo and as CSS custom properties in
-`@kora/brand/tokens.css` for the web apps.
-
-### Product naming
-
-The three flagship products keep their original market names — **SwiftPOS**,
-**SalesPilot** and **Neobank**. The platform surfaces built alongside them are
-Kora-prefixed (`Kora Admin`, `Kora Business`, `Kora Supplier`, `Kora Shopper`)
-so a user always knows which app they are in.
-
-`APPS.pos` is retained as an alias of `APPS.swiftpos` so existing consumers
-keep resolving; `brand:verify` fails if the two ever drift apart.
-
-**Naming rule:** the customer always sees "KoraSystems". "Kora Systems" appears
-in legal copy, invoices and document titles. "Kora Systems Inc" is the
-registered entity for contracts and terms.
-
-Run `pnpm brand:verify` to assert the name, tagline, the three headline hexes,
-their scale positions, the product names and the alias all still match the
-brand spec.
-
-## Getting started
+## Local development
 
 ```bash
 pnpm install
-cp .env.example .env      # then fill in DATABASE_URL
-pnpm db:migrate
-pnpm db:seed
 ```
 
-Requires Node 20+. `pnpm` is pinned via `packageManager` in `package.json`.
+Copy `.env.example` to `.env`, then configure at least `DATABASE_URL`,
+`DIRECT_URL`, and a unique, random `SESSION_SECRET`. For a local demo, retain
+the demo settings from the example. Do not use the shared demo password or
+placeholder secrets in production.
 
-### Scripts
+```bash
+pnpm db:migrate
+pnpm db:seed
+pnpm dev
+```
+
+The platform is available at `http://localhost:3000` by default. To use the
+demo dataset, sign in with one of the accounts below; the demo password is
+`Demo@1234`:
+
+- `admin@demo.kora.co.ke`
+- `sme1@demo.kora.co.ke`
+- `supplier1@demo.kora.co.ke`
+- `customer1@demo.kora.co.ke`
+
+The demo password is shared and grants access to seeded accounts. Disable demo
+login and remove `KORA_DEMO_PASSWORD` before production use.
+
+## Common commands
 
 | Command | Description |
 |---|---|
-| `pnpm dev` | Run all apps in watch mode |
-| `pnpm build` | Production build |
-| `pnpm typecheck` | Typecheck every package |
-| `pnpm db:migrate` | Apply migrations |
-| `pnpm db:seed` | Load the full demo dataset |
-| `pnpm db:rescore` | Recompute credit scores only (fast) |
-| `pnpm gate:verify` | Verify the disbursement gate (see below) |
-| `pnpm brand:verify` | Verify brand name, tagline, colours and product names |
+| `pnpm dev` | Start the platform |
+| `pnpm build` | Build workspace packages |
+| `pnpm typecheck` | Typecheck workspace packages |
+| `pnpm lint` | Run configured workspace linters |
+| `pnpm db:migrate` | Apply development migrations |
+| `pnpm db:seed` | Load demo data |
+| `pnpm db:rescore` | Recompute demo credit assessments |
+| `pnpm gate:verify` | Verify the disbursement safety gate |
+| `pnpm brand:verify` | Verify brand constants |
 
-### Ports
+## M-Pesa and money movement
 
-**One port: 3000.** `PORT` in `.env` is the only place the port is declared:
-`next dev` / `next start` read it and fall back to 3000, and
-`NEXT_PUBLIC_APP_URL` is derived from it in `next.config.mjs`. Nothing else
-hardcodes a port, so the two cannot drift apart.
+Daraja credentials are optional for local development. Configure the relevant
+`MPESA_*` values in `.env` to enable live collection flows. For an SME's own
+Paybill or Till, register the public C2B validation and confirmation endpoints
+shown in `.env.example` with that merchant's Daraja account.
 
-| What | Port | Command |
-|---|---|---|
-| **The platform — all three products, dashboards and the console** | **3000** | `pnpm dev` |
+C2B callbacks are stored as unreconciled records and do not post to the ledger.
+An authorized user must verify the payment in the merchant statement or Daraja
+portal, then reconcile it to an unreceipted, completed M-Pesa sale for the exact
+amount. Reconciliation attaches the receipt to the existing sale; it does not
+create a second ledger posting. This manual process does not authenticate the
+callback itself.
 
-To move the platform, change `PORT`; `NEXT_PUBLIC_APP_URL` follows from it.
-
-## Database
-
-Postgres via Prisma, isolated in its own **`kora` schema**. This is deliberate:
-the shared Neon instance already holds another application's 24 tables in
-`public`, with direct name collisions (`customers`, `products`, `sales`,
-`users`, `invoices`). Isolating the schema means Kora can never drop or alter
-someone else's data.
-
-`sslmode=require` is mandatory — Neon rejects plaintext connections.
-
-## The ledger
-
-Money is never tracked in one place. `Transaction` is a header and
-`LedgerEntry` holds its debit/credit legs, and every posting must balance:
-
-```ts
-await post({ reference, type, accountCode, amount, smeId }, saleLegs(total, fee), prisma);
-```
-
-Reports read `accountBalances()` rather than summing `Sale`/`Loan`/`Savings`
-tables, because those can each already be represented in the ledger — summing
-both would double count. `findUnbalanced()` audits the whole book.
-
-## Disbursement gate
-
-Loan and BNPL disbursement is **disabled by default**. `DISBURSEMENT_PROVIDER`
-defaults to `simulated`, which writes a balanced ledger entry flagged
-`simulated: true` and parks the loan at `BLOCKED_NO_PARTNER`. It never moves
-money.
-
-This is intentional, not unfinished plumbing. Holding customer and loan funds
-in one M-Pesa paybill and disbursing credit from it is the profile of an
-unlicensed lending operation, and in Kenya both digital credit and BNPL sit
-inside the CBK's regulatory perimeter. The gate keeps the product fully
-buildable and testable while real fund movement waits for a licensed partner.
-
-`pnpm gate:verify` asserts this holds — including that a mistyped env var
-falls back to `simulated`, and that no loan ends up with a disbursement date.
-
-## Demo data
-
-`pnpm db:seed` creates 71 users, 6 SMEs, 4 suppliers, 60 customers, 48
-products, **30,429 sales across 365 days**, 120 orders, 5 loans, 15 BNPL plans
-and 5 savings accounts. Sales carry weekday seasonality, a growth trend and a
-promo spike, so forecasting and scoring have real signal rather than a flat
-line. One SME is deliberately near-zero-volume to exercise the sparse-data
-path.
-
-Sign in with any of these (password `Demo@1234`):
-`admin@demo.kora.co.ke` · `sme1@demo.kora.co.ke` · `supplier1@demo.kora.co.ke` · `customer1@demo.kora.co.ke`
+Loan and BNPL disbursement is disabled by default. Keep
+`DISBURSEMENT_PROVIDER=simulated` until a licensed disbursement partner and the
+required compliance arrangements are in place. Simulated transactions do not
+move money.
 
 ## Vercel deployment
 
-The Vercel project should use `apps/admin` as its Root Directory. Its
-[`vercel.json`](./apps/admin/vercel.json) builds the Next.js app together with
-its workspace dependencies, including Prisma client generation. Enable access
-to workspace files outside the app directory if Vercel prompts for it.
+The Vercel configuration is in [`apps/admin/vercel.json`](./apps/admin/vercel.json).
+Configure the Vercel project to build the monorepo with `apps/admin` as the
+application root, and ensure workspace files outside that directory are
+available to the build. Set production environment variables in Vercel,
+including production database URLs, a unique `SESSION_SECRET`, and the public
+HTTPS `NEXT_PUBLIC_APP_URL`. Configure Supabase variables if using Supabase
+authentication.
 
-Set environment variables in Vercel for each deployment target:
+Apply database migrations from a trusted environment before routing production
+traffic:
 
-- `DATABASE_URL` and `DIRECT_URL` for the production Postgres database.
-- `SESSION_SECRET` with a fresh, random value of at least 32 characters.
-- `NEXT_PUBLIC_APP_URL` set to the deployed HTTPS origin.
-- `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` for production
-  authentication. Keep the service-role key server-side only.
-- Leave `KORA_DEMO_PASSWORD` and `KORA_ALLOW_DEMO_LOGIN` unset in production.
-- Keep `DISBURSEMENT_PROVIDER=simulated` until a licensed partner is configured.
+```bash
+pnpm --filter @kora/database migrate:deploy
+```
 
-Apply database migrations from a trusted environment before sending production
-traffic (`pnpm --filter @kora/database migrate:deploy`). A successful build
-prepares the app; it does not itself create or deploy a Vercel project.
-
-For C2B collection on an SME's own Paybill or Till, register the public
-validation and confirmation URLs shown in `.env.example` in that merchant's
-Daraja portal, using the merchant's own app credentials. Callback events are
-stored as **unreconciled** and do not change ledger balances. Daraja callbacks
-are not cryptographically authenticated by this app: an authorized SME user
-must verify the receipt in the merchant statement or Daraja portal, then match
-it to an unreceipted completed M-Pesa sale of the exact amount. Reconciliation
-attaches the receipt to that existing sale and does not post a second ledger
-entry.
+The repository includes deployment configuration, but a successful local
+build does not create or deploy a Vercel project. Production credentials,
+project configuration, and deployment access are still required.
 
 ## Roadmap
 
-The monorepo, database, ledger and demo data are complete. The landing page and
-SME onboarding flow are implemented. Scoring and forecasting are now
-explainable, data-driven decision-support features; credit decisions still
-require human review.
-
 | Work | Status |
 |---|---|
-| Monorepo, database, ledger and demo data | ✅ Done |
+| Monorepo, database, ledger, and demo data | ✅ Implemented |
 | Explainable credit scoring with human review | ✅ Implemented |
 | Sales-based demand forecasts | ✅ Implemented |
-| SME onboarding and recovery across refreshes | ✅ Implemented |
-| Public landing page | ✅ Built; deployment pending |
-| Deploy to Vercel | 🔴 Project setup and live deployment still required |
-| Get first client | 🔴 Requires a qualified prospect and approved outreach |
-| M-Pesa C2B | 🟡 Callback capture and manual sale reconciliation are implemented; merchant registration and live verification remain |
-| Build offline POS | 🟡 Not started |
+| SME onboarding and recovery | ✅ Implemented |
+| Public landing page | ✅ Built |
+| M-Pesa C2B callback capture and manual reconciliation | 🟡 Implemented; merchant registration and live verification remain |
+| Deploy to Vercel | ⏳ Project setup and live deployment remain |
+| Get first client | ⏳ Requires a qualified prospect and authorized outreach |
+| Offline POS | ⏳ Not started |
+| Native mobile applications | ⏳ Not started |
 
-## Security note
+## License
 
-`.env` is gitignored and must never be committed. The demo password is
-intentionally shared; real credentials are not.
+Proprietary. Kora Systems Inc. All rights reserved.
