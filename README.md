@@ -272,8 +272,12 @@ prepares the app; it does not itself create or deploy a Vercel project.
 For C2B collection on an SME's own Paybill or Till, register the public
 validation and confirmation URLs shown in `.env.example` in that merchant's
 Daraja portal, using the merchant's own app credentials. Callback events are
-stored as **unreconciled** and do not change ledger balances; match them to a
-sale before recording them as reconciled.
+stored as **unreconciled** and do not change ledger balances. Daraja callbacks
+are not cryptographically authenticated by this app: an authorized SME user
+must verify the receipt in the merchant statement or Daraja portal, then match
+it to an unreceipted completed M-Pesa sale of the exact amount. Reconciliation
+attaches the receipt to that existing sale and does not post a second ledger
+entry.
 
 ## Roadmap
 
@@ -291,7 +295,7 @@ require human review.
 | Public landing page | ✅ Built; deployment pending |
 | Deploy to Vercel | 🔴 Project setup and live deployment still required |
 | Get first client | 🔴 Requires a qualified prospect and approved outreach |
-| M-Pesa C2B | 🟡 Callback capture is in place; merchant registration and sale reconciliation remain |
+| M-Pesa C2B | 🟡 Callback capture and manual sale reconciliation are implemented; merchant registration and live verification remain |
 | Build offline POS | 🟡 Not started |
 
 ## Security note

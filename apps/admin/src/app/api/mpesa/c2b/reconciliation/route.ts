@@ -98,13 +98,18 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as {
     reference?: unknown;
     saleId?: unknown;
+    verifiedExternally?: unknown;
   } | null;
   const reference =
     typeof body?.reference === "string" ? body.reference.trim() : "";
   const saleId = typeof body?.saleId === "string" ? body.saleId.trim() : "";
-  if (!/^C2B-[A-Za-z0-9]{4,32}$/.test(reference) || !saleId) {
+  if (
+    !/^C2B-[A-Za-z0-9]{4,32}$/.test(reference) ||
+    !saleId ||
+    body?.verifiedExternally !== true
+  ) {
     return NextResponse.json(
-      { error: "A valid C2B reference and sale are required." },
+      { error: "Confirm the C2B receipt against the merchant statement before reconciling." },
       { status: 400 },
     );
   }
@@ -174,6 +179,8 @@ export async function POST(request: Request) {
               status: "RECONCILED",
               matchedSaleId: sale.id,
               reconciledAt: new Date().toISOString(),
+              reconciledBy: auth.user.id,
+              verification: "MERCHANT_STATEMENT_CONFIRMED",
             },
           },
         });

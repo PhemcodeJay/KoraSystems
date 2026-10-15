@@ -64,6 +64,7 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [c2bEvents, setC2bEvents] = useState<C2bEvent[]>([]);
   const [c2bSelections, setC2bSelections] = useState<Record<string, string>>({});
+  const [c2bVerified, setC2bVerified] = useState<Record<string, boolean>>({});
   const [c2bLoading, setC2bLoading] = useState(true);
   const [c2bError, setC2bError] = useState("");
   const [reconciling, setReconciling] = useState("");
@@ -97,9 +98,12 @@ export default function PaymentsPage() {
     try {
       const response = await apiFetch(api.mpesaC2bReconciliation.path, {
         method: "POST",
-        body: { reference: event.reference, saleId },
+        body: {
+          reference: event.reference,
+          saleId,
+          verifiedExternally: c2bVerified[event.reference] === true,
+        },
       });
-      const payload = await response.json();
       setC2bEvents((current) => current.filter((item) => item.id !== event.id));
       setTxns((current) =>
         current.map((txn) =>
@@ -113,7 +117,11 @@ export default function PaymentsPage() {
         delete next[event.reference];
         return next;
       });
-      void payload;
+      setC2bVerified((current) => {
+        const next = { ...current };
+        delete next[event.reference];
+        return next;
+      });
     } catch (error) {
       setC2bError(
         error instanceof Error ? error.message : "Could not reconcile that payment.",
@@ -180,7 +188,7 @@ export default function PaymentsPage() {
 
       <Card
         title="C2B payments to reconcile"
-        hint="Link a callback to a completed M-Pesa sale for the exact amount. This records the receipt on the existing sale without posting a second ledger entry."
+        hint="Callbacks are not cryptographically authenticated. Verify the receipt in the merchant statement or Daraja portal, then link it to a completed M-Pesa sale for the exact amount. This does not post a second ledger entry."
       >
         {c2bError && (
           <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -230,10 +238,31 @@ export default function PaymentsPage() {
                       </span>
                     )}
                   </label>
+                  <label className="flex items-start gap-2 text-xs text-ink-600 md:col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={c2bVerified[event.reference] ?? false}
+                      onChange={(e) =>
+                        setC2bVerified((current) => ({
+                          ...current,
+                          [event.reference]: e.target.checked,
+                        }))
+                      }
+                      disabled={reconciling === event.reference}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      I verified this M-Pesa receipt in the merchant statement or Daraja portal.
+                    </span>
+                  </label>
                   <button
                     type="button"
                     onClick={() => void reconcileC2b(event)}
-                    disabled={!saleId || reconciling === event.reference}
+                    disabled={
+                      !saleId ||
+                      !c2bVerified[event.reference] ||
+                      reconciling === event.reference
+                    }
                     className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {reconciling === event.reference ? "Reconciling…" : "Reconcile"}

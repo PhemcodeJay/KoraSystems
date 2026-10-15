@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     typeof body?.TransTime === "string" && /^\d{14}$/.test(body.TransTime)
       ? body.TransTime
       : null;
-  await prisma.transaction.upsert({
+  const transaction = await prisma.transaction.upsert({
     where: { reference: `C2B-${payload.transactionId}` },
     update: {},
     create: {
@@ -44,7 +44,17 @@ export async function POST(request: Request) {
         transactionTime,
       },
     },
+    select: { type: true, amount: true, smeId: true },
   });
+  if (
+    transaction.type !== "MPESA_C2B_UNRECONCILED" ||
+    transaction.smeId !== smeId ||
+    !transaction.amount.equals(payload.amount)
+  ) {
+    return NextResponse.json(
+      { ResultCode: 1, ResultDesc: "Receipt conflicts with an existing payment." },
+    );
+  }
 
   return NextResponse.json({ ResultCode: 0, ResultDesc: "Accepted" });
 }
