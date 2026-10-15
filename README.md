@@ -269,6 +269,12 @@ Apply database migrations from a trusted environment before sending production
 traffic (`pnpm --filter @kora/database migrate:deploy`). A successful build
 prepares the app; it does not itself create or deploy a Vercel project.
 
+For C2B collection on an SME's own Paybill or Till, register the public
+validation and confirmation URLs shown in `.env.example` in that merchant's
+Daraja portal, using the merchant's own app credentials. Callback events are
+stored as **unreconciled** and do not change ledger balances; match them to a
+sale before recording them as reconciled.
+
 ## Roadmap
 
 The monorepo, database, ledger and demo data are complete. The landing page and
@@ -285,7 +291,7 @@ require human review.
 | Public landing page | ✅ Built; deployment pending |
 | Deploy to Vercel | 🔴 Project setup and live deployment still required |
 | Get first client | 🔴 Requires a qualified prospect and approved outreach |
-| Integrate M-Pesa C2B | 🟡 Requires Daraja configuration and payment-allocation decisions |
+| M-Pesa C2B | 🟡 Callback capture is in place; merchant registration and sale reconciliation remain |
 | Build offline POS | 🟡 Not started |
 
 ## Security note

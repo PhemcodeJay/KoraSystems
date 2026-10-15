@@ -151,3 +151,11 @@ test("demand forecast returns no signal for sparse history", () => {
   assert.equal(forecast.daysUntilStockout, null);
   assert.equal(forecast.recommendedOrder, 0);
 });
+
+test("demand forecast does not claim confidence without sales", () => {
+  const observations = Array.from({ length: 90 }, (_, offset) => ({
+    date: new Date(Date.UTC(2026, 0, 1 + offset)),
+    quantity: 0,
+  }));
+  assert.equal(forecastDemand(observations, 25, 10).confidence, "LOW");
+});

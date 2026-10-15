@@ -13,6 +13,7 @@ type Txn = {
   amount: string | number;
   postedAt: string;
   simulated: boolean;
+  metadata?: { status?: string } | null;
 };
 
 type Balance = { accountCode: string; debit: number; credit: number; balance: number };
@@ -70,7 +71,7 @@ export default function PaymentsPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Stat label="Postings" value={String(txns.length)} />
+        <Stat label="Transactions" value={String(txns.length)} />
         <Stat label="Total debits" value={fmtKES(totals.debits)} />
         <Stat label="Total credits" value={fmtKES(totals.credits)} tone="brand" />
       </div>
@@ -107,7 +108,10 @@ export default function PaymentsPage() {
         )}
       </Card>
 
-      <Card title="Recent postings">
+      <Card
+        title="Recent transactions"
+        hint="C2B callbacks are stored for reconciliation and are not included in ledger balances until matched."
+      >
         {txns.length === 0 ? (
           <Empty message={loading ? "Loading…" : "No postings yet."} />
         ) : (
@@ -127,6 +131,11 @@ export default function PaymentsPage() {
                   <Td className="font-mono text-xs">{t.reference}</Td>
                   <Td>
                     <Badge>{humanise(t.type)}</Badge>
+                    {t.metadata?.status === "RECEIVED_UNRECONCILED" && (
+                      <span className="ml-1 text-xs font-medium text-amber-700">
+                        awaiting reconciliation
+                      </span>
+                    )}
                     {t.simulated && (
                       <span className="ml-1 text-xs text-ink-400">simulated</span>
                     )}

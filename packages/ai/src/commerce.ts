@@ -76,7 +76,8 @@ export function forecastDemand(
   const days = [...byDay.entries()]
     .map(([key, quantity]) => ({ date: new Date(`${key}T00:00:00.000Z`), quantity }))
     .sort((a, b) => a.date.getTime() - b.date.getTime());
-  if (days.length < 14) {
+  const observedDemand = days.reduce((sum, day) => sum + day.quantity, 0);
+  if (days.length < 14 || observedDemand === 0) {
     return {
       forecast7d: 0,
       forecast30d: 0,
