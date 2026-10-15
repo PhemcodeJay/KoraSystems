@@ -203,6 +203,10 @@ export const api = {
   onboardingStatus: { method: "GET", path: "/api/onboarding/status" },
   mpesaStk: { method: "POST", path: "/api/mpesa/stk" },
   mpesaB2C: { method: "POST", path: "/api/mpesa/b2c" },
+  mpesaC2bReconciliation: {
+    method: "GET",
+    path: "/api/mpesa/c2b/reconciliation",
+  },
 } as const;
 
 /** Replace the `:id` placeholder in a route template. */
