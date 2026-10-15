@@ -8,7 +8,7 @@
     "start": "node node_modules/next/dist/bin/next start",
     "lint": "node node_modules/next/dist/bin/next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node __tests__/api-routes.test.js"
+    "test": "node --test"
   },
   "dependencies": {
     "@kora/ai": "workspace:*",
