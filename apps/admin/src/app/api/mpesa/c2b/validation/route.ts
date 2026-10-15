@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { findC2bSme, parseC2bPayload } from "@/lib/mpesa-c2b";
+import { findC2bSme } from "@/lib/mpesa-c2b";
+import { parseC2bPayload } from "@/lib/mpesa-c2b-payload";
 
 export async function POST(request: Request) {
   const payload = parseC2bPayload(await request.json().catch(() => null));

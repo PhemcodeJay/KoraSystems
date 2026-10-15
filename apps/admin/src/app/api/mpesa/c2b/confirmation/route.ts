@@ -1,6 +1,7 @@
 import { prisma } from "@kora/database";
 import { NextResponse } from "next/server";
-import { findC2bSme, parseC2bPayload } from "@/lib/mpesa-c2b";
+import { findC2bSme } from "@/lib/mpesa-c2b";
+import { parseC2bPayload } from "@/lib/mpesa-c2b-payload";
 
 type C2BPayload = {
   TransTime?: unknown;
