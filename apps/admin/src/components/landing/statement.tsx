@@ -6,7 +6,7 @@ import { KoraLogo, APPS, type KoraMarkVariant } from "@kora/brand";
  *
  * Takes each gap named in the Problem band and answers it with the product
  * built to close it: SalesPilot for visibility and forecasting, Neobank for one
- * ledger and credit, SwiftPOS for a till that works on the shop floor. A gap
+ * ledger and credit review, SwiftPOS for a browser-based till. A gap
  * that genuinely spans two products — credit needs a score *and* a loan — shows
  * both, so the platform reads as connected rather than as three separate apps.
  *
@@ -40,7 +40,7 @@ const FIXES: Fix[] = [
       { key: "neobank", variant: "blue" },
     ],
     solution:
-      "Your real sales become a credit score in SalesPilot, then a working-capital loan in Neobank — no collateral, because the data is yours.",
+      "Sales, repayment, savings and business-history signals inform an explainable credit score. A human reviewer makes lending decisions.",
   },
   {
     problem: "Ten tools that don't talk",
@@ -49,13 +49,13 @@ const FIXES: Fix[] = [
       { key: "neobank", variant: "blue" },
     ],
     solution:
-      "One account and one balanced ledger across the till, payments, suppliers and lending. M-Pesa, wallet and cash on every receipt — nothing to reconcile by hand.",
+      "One account and a balanced ledger for recorded sales and platform money movements. Daraja collection must be configured separately.",
   },
   {
     problem: "Enterprise platforms built for someone else",
     products: [{ key: "swiftpos", variant: "green" }],
     solution:
-      "SwiftPOS is mobile-first and offline-first, M-Pesa native — it runs on the phone in your shop, not a desktop in an office. It's a shop-floor product, not a head-office one.",
+      "SwiftPOS is a browser-based point of sale and stock workflow for a phone, tablet or desktop. An internet connection is currently required.",
   },
 ];
 
@@ -68,7 +68,7 @@ export function Statement() {
           the shop floor.
         </p>
         <p className="mx-auto mt-4 max-w-2xl text-base text-ink-300">
-          ATG, ATG Connect and Africa Trade Exchange serve trade finance for governments and enterprises. KoraSystems starts where the shop actually is � an offline-first till, a ledger that balances, and credit built on your own sales.</p>
+          KoraSystems brings sales, stock and business records into one platform — with explainable credit decision support and a ledger for recorded transactions.</p>
 
         <dl className="mx-auto mt-10 grid max-w-4xl gap-x-8 gap-y-6 text-left sm:grid-cols-2">
           {FIXES.map((f) => (

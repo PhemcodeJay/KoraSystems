@@ -6,10 +6,8 @@ import { Container, Section, SectionHeading } from "./ui";
  * The competitive frame. The Problem band names the gaps and the Statement band
  * says which product closes them; this band puts both sides in one place so a
  * visitor can scan the trade in a glance — what they run today on the left, what
- * the same thing becomes with KoraSystems on the right. Every claim here is one
- * the product actually delivers (one ledger, offline POS, M-Pesa on the receipt,
- * a credit score from real sales), so the comparison stays honest rather than
- * knocking strawmen.
+ * the same thing becomes with KoraSystems on the right. Product claims are
+ * intentionally limited to the workflows that are implemented today.
  */
 
 type Row = {
@@ -27,12 +25,12 @@ const ROWS: Row[] = [
   {
     capability: "Know what to reorder",
     today: "Reorder on gut feel, then eat the spoilage when you guess wrong.",
-    kora: "AI demand forecasting tells you what will sell before you order.",
+    kora: "Sales-based demand estimates help guide your next restock.",
   },
   {
     capability: "Get credit when you need it",
     today: "No record a bank trusts, so growth waits on collateral you don't have.",
-    kora: "A credit score built from your real sales — no collateral required.",
+    kora: "An explainable score from business data, provided to a human reviewer.",
   },
   {
     capability: "Keep one set of books",
@@ -40,14 +38,14 @@ const ROWS: Row[] = [
     kora: "One account and one balanced ledger across till, payments and lending.",
   },
   {
-    capability: "Keep selling when the network drops",
-    today: "Desktop software that stops the moment data runs out.",
-    kora: "Offline-first POS on your phone that syncs when you reconnect.",
+    capability: "Run business tools in one place",
+    today: "Separate apps and records that are difficult to compare.",
+    kora: "Sales, stock and account views behind one sign-in.",
   },
   {
     capability: "Get paid cleanly",
     today: "Cash and manual M-Pesa checks you tally up at closing.",
-    kora: "M-Pesa, wallet and cash on every receipt, in one ledger.",
+    kora: "Track transactions in one ledger; Daraja collection requires setup.",
   },
   {
     capability: "Pay for what you use",

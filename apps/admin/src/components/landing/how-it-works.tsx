@@ -11,15 +11,15 @@ import { Section, SectionHeading } from "./ui";
 const STEPS = [
   {
     title: "Sign up",
-    body: "Create your free account in under a minute. No card, no setup fee.",
+    body: "Create an account and choose the business workspace that fits you.",
   },
   {
     title: "Set up",
-    body: "Add your products, set prices and turn on the till. Import or scan.",
+    body: "Add your business details and first product, then configure your payment shortcode if you have one.",
   },
   {
     title: "Grow",
-    body: "Watch sales, forecast demand and borrow against your record.",
+    body: "Review sales and demand estimates. Loan applications are assessed by a human reviewer.",
   },
 ];
 
@@ -29,7 +29,7 @@ export function HowItWorks({ signedIn }: { signedIn: boolean }) {
       <SectionHeading
         eyebrow="How it works"
         title="Live in three steps."
-        sub="From sign-up to your first AI-backed loan on the same day."
+        sub="Start recording sales and stock; credit remains subject to human review and a licensed lending partner."
       />
       <ol className="mt-10 grid gap-5 md:grid-cols-3">
         {STEPS.map((s, i) => (

@@ -49,7 +49,7 @@ export function Features() {
       <SectionHeading
         eyebrow="Features"
         title="Everything you need. Nothing you don't."
-        sub="The tools that turn daily trading into growth — AI, payments and credit working off the same data."
+        sub="Tools that help turn daily trading into growth — sales analytics, payment tracking and explainable credit review."
       />
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map((f) => (

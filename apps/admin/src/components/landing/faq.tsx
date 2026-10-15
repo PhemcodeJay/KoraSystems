@@ -5,21 +5,21 @@ import { Section, SectionHeading } from "./ui";
  *
  * Uses native `<details>` so the accordion works with no client JavaScript and
  * stays keyboard- and screen-reader accessible. Questions are the ones a Kenyan
- * SME actually asks — money, offline, M-Pesa and credit eligibility.
+ * SME actually asks — money, connectivity, M-Pesa and credit eligibility.
  */
 
 const FAQS: { q: string; a: string }[] = [
   {
     q: "Does it work without internet?",
-    a: "Yes. SwiftPOS keeps selling offline and stores sales on the device. The moment you reconnect, everything syncs automatically — no double entry.",
+    a: "Not yet. The current platform requires an internet connection; offline POS support is still planned.",
   },
   {
     q: "How does M-Pesa integration work?",
-    a: "KoraSystems connects to Safaricom's Daraja API. Customers pay to your till, and you can pay suppliers, disburse loans or withdraw savings — all recorded on one ledger.",
+    a: "STK collection can be enabled with Daraja credentials. C2B callback events are captured for reconciliation; loan disbursement remains simulated until a licensed partner is configured.",
   },
   {
     q: "How is my credit score calculated?",
-    a: "From your real trading history — sales volume, consistency and stock movement. Strong, steady sales raise your score and the loan you qualify for. No collateral needed.",
+    a: "The explainable score uses recent sales, repayment, savings, stock, supplier and business-history signals. It supports human review; it does not automatically approve a loan or guarantee eligibility.",
   },
   {
     q: "What does it cost?",
@@ -27,7 +27,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Is my data safe?",
-    a: "Data is encrypted end to end, sessions are signed, and access is role-based on every screen. Your ledger is isolated to your business.",
+    a: "The platform applies signed sessions, role-based authorization and tenant scoping to business records. Review the service and database providers' security terms for infrastructure-level protections.",
   },
   {
     q: "Can I use it on my phone?",

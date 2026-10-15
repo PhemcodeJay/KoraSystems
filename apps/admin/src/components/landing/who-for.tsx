@@ -15,7 +15,7 @@ const AUDIENCES: Audience[] = [
   {
     icon: "🏪",
     title: "Business owners (SME)",
-    body: "Ring up sales, track stock, forecast demand and borrow against your record.",
+    body: "Record sales, track stock, review demand estimates and build a business history for lender review.",
     cta: "Open a business account",
   },
   {
