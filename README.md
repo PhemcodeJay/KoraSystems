@@ -67,9 +67,11 @@ pnpm db:seed
 pnpm dev
 ```
 
-The platform is available at `http://localhost:3000` by default. To use the
-demo dataset, sign in with one of the accounts below; the demo password is
-`Demo@1234`:
+The platform is a single Next.js app (`apps/admin`) serving every product on
+one port. The port is declared in `.env` via `PORT` (Next falls back to `3000`;
+the committed `.env` uses `5000`), so with the demo environment it is available
+at `http://localhost:5000`. To use the demo dataset, sign in with one of the
+accounts below; the demo password is `Demo@1234`:
 
 - `admin@demo.kora.co.ke`
 - `sme1@demo.kora.co.ke`
