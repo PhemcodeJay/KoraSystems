@@ -1,0 +1,7 @@
+-- Baseline: this Neon database already contains the 24 SalesPilot tables in
+-- the public schema (customers, products, sales, users, invoices, payments,
+-- suppliers, subscriptions, reports, ...). This migration records that
+-- pre-existing state so Prisma can manage the `kora` schema on top of it
+-- without touching any SalesPilot data.
+--
+-- The `kora` schema is created in the next migration.

@@ -1,0 +1,14 @@
+Failed to compile.
+
+./src/app/(app)/neobank/crypto/deposit/page.tsx:192:41
+Type error: Type '{ size: number; className: string; }' is not assignable to type 'IntrinsicAttributes & { size?: number | undefined; }'.
+  Property 'className' does not exist on type 'IntrinsicAttributes & { size?: number | undefined; }'.
+
+[0m [90m 190 |[39m           {loading [33m?[39m ([0m
+[0m [90m 191 |[39m             [33m<[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 192 |[39m               [33m<[39m[33mLoadingSpinner[39m size[33m=[39m{[35m16[39m} className[33m=[39m[32m"mr-2"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                                         [31m[1m^[22m[39m[0m
+[0m [90m 193 |[39m               [33mDepositing…[39m[0m
+[0m [90m 194 |[39m             [33m<[39m[33m/[39m[33m>[39m[0m
+[0m [90m 195 |[39m           ) [33m:[39m ([0m
+Next.js build worker exited with code: 1 and signal: null

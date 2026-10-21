@@ -1,0 +1,44 @@
+node_modules/
+.pnpm-store/
+# alternate content store (this repo's install currently uses this one)
+.pnpm-store-fresh/
+
+# next
+.next/
+out/
+build/
+dist/
+.turbo/
+
+# env — never commit real secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# database
+*.db
+# Prisma generates this per-machine (embeds absolute paths + the platform
+# engine); it is rebuilt by `pnpm db:generate` and must never be committed.
+packages/database/generated/
+*.db-journal
+
+# PHP (salespilot-crm) — dependencies and runtime data, never source
+vendor/
+uploads/
+logs/
+composer.phar
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.replit
+
+# misc
+.DS_Store
+*.pem
+.vercel
+*.tsbuildinfo
+coverage/

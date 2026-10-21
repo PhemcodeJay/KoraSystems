@@ -1,0 +1,28 @@
+{
+  "name": "Kora POS",
+  "short_name": "Kora POS",
+  "description": "Offline-capable point of sale for African SMEs",
+  "start_url": "/pos",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "id": "/pos",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["business", "finance"],
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  }
+}

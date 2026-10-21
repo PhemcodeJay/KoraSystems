@@ -1,0 +1,13 @@
+src/app/(app)/neobank/crypto/deposit/page.tsx(192,41): error TS2322: Type '{ size: number; className: string; }' is not assignable to type 'IntrinsicAttributes & { size?: number | undefined; }'.
+  Property 'className' does not exist on type 'IntrinsicAttributes & { size?: number | undefined; }'.
+src/app/(app)/neobank/crypto/withdraw/page.tsx(231,41): error TS2322: Type '{ size: number; className: string; }' is not assignable to type 'IntrinsicAttributes & { size?: number | undefined; }'.
+  Property 'className' does not exist on type 'IntrinsicAttributes & { size?: number | undefined; }'.
+src/app/(app)/sme-home.tsx(177,78): error TS2339: Property 'amount' does not exist on type '{ creditScores: { id: string; model: string; createdAt: Date; smeId: string; score: number; interestRate: Decimal; loanId: string | null; riskLevel: CreditRiskLevel; ... 4 more ...; isPlaceholder: boolean; }[]; } & { ...; }'.
+src/app/api/mpesa/c2b/confirmation/route.ts(28,24): error TS2345: Argument of type '{ transactionId: string; shortcode: string; amount: number; billReference: string; }' is not assignable to parameter of type 'C2bRawBody'.
+  Property 'amount' is incompatible with index signature.
+    Type 'number' is not assignable to type 'string | string[] | undefined'.
+src/app/api/mpesa/c2b/validation/route.ts(22,24): error TS2345: Argument of type '{ transactionId: string; shortcode: string; amount: number; billReference: string; }' is not assignable to parameter of type 'C2bRawBody'.
+  Property 'amount' is incompatible with index signature.
+    Type 'number' is not assignable to type 'string | string[] | undefined'.
+src/components/dashboard/stat-card.tsx(68,113): error TS2749: 'StatCard' refers to a value, but is being used as a type here. Did you mean 'typeof StatCard'?
+src/lib/mpesa-c2b-verify.ts(132,54): error TS2345: Argument of type '"Hash"' is not assignable to parameter of type '"Amount" | "MpesaReceiptNumber" | "ResultCode" | "OriginatorIdentifier" | "PassKey" | "MsgId" | "PhoneNumber" | "Result" | "ResultDesc" | "TransactionID" | "COMMAND_ID" | "SenderIdentifier" | ... 13 more ... | "MapRsp"'.
