@@ -174,7 +174,7 @@ export async function SmeHome() {
                     <tbody className="divide-y divide-ink-100">
                       {d.loans.map((l) => (
                         <tr key={l.id}>
-                          <Td className="font-medium tabular-nums">{fmtKES(l.amount)}</Td>
+                          <Td className="font-medium tabular-nums">{fmtKES(l.principal)}</Td>
                           <Td>
                             <Badge className={LOAN_STYLES[l.status] ?? ""}>{humanise(l.status)}</Badge>
                           </Td>

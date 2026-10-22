@@ -9,10 +9,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
 import { BRAND, ROLE_LABELS, KoraLogo } from "@kora/brand";
-import { SECTIONS } from "./navigation";
+import { SECTIONS, tierAllows } from "./navigation";
 import { ShellSearch } from "./shell-search";
 
 type ShellUser = {
@@ -66,12 +66,21 @@ export function AppShell({ user, children }: { user: ShellUser; children: React.
   const [searchOpen, setSearchOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
 
+  // Navigating (by link, browser back/forward) should dismiss the mobile
+  // drawer — otherwise it stays open over the page the user just asked for.
+  useEffect(() => {
+    setNavOpen(false);
+  }, [pathname]);
+
   const visible = SECTIONS.map((section) => ({
     ...section,
     items: section.items.filter(
       (i) =>
         i.roles.some((r) => user.usableRoles?.includes(r)) &&
-        (!i.heldBy || user.usableRoles?.includes(i.heldBy)),
+        (!i.heldBy || user.usableRoles?.includes(i.heldBy)) &&
+        // ADMIN is staff, not a subscriber — never tier-locked. Everyone else
+        // is gated by the plan tier that unlocks the link's product.
+        (user.role === "ADMIN" || tierAllows(user.planTier, i.app)),
     ),
   })).filter((s) => s.items.length > 0);
 
@@ -88,6 +97,18 @@ export function AppShell({ user, children }: { user: ShellUser; children: React.
     router.push("/login");
     router.refresh();
   }, [router]);
+
+  // Cmd/Ctrl+K opens the search palette, the convention every dashboard uses.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-ink-50">
@@ -220,6 +241,9 @@ export function AppShell({ user, children }: { user: ShellUser; children: React.
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <span className="hidden sm:inline">Search</span>
+                  <kbd className="hidden rounded border border-ink-200 bg-ink-50 px-1 py-0.5 font-mono text-[10px] text-ink-400 md:inline">
+                    ⌘K
+                  </kbd>
                 </button>
 
                 <button

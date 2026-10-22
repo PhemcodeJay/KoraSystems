@@ -11,20 +11,35 @@ import { verifyC2bSignature, C2bSignedContentError } from "@/lib/mpesa-c2b-verif
  * forged callback.
  */
 export async function POST(request: Request) {
-  const payload = parseC2bPayload(await request.json().catch(() => null));
-  if (!payload) {
+  // The RAW body is what Daraja signed. The normalised payload below uses
+  // different field names (`TransAmount` vs `Amount`), so verifying against it
+  // would build the wrong `stringToBeSigned` and reject every legitimate
+  // callback. Verify first, against the raw body.
+  const raw = (await request.json().catch(() => null)) as Record<
+    string,
+    string | string[] | undefined
+  > | null;
+
+  if (!raw || typeof raw !== "object") {
     return NextResponse.json(
       { ResultCode: 1, ResultDesc: "Invalid payment details." },
     );
   }
 
   try {
-    verifyC2bSignature(payload, request.headers);
+    verifyC2bSignature(raw, request.headers);
   } catch (error) {
     if (error instanceof C2bSignedContentError) {
       return NextResponse.json({ ResultCode: 1, ResultDesc: "Invalid signature" });
     }
     throw error;
+  }
+
+  const payload = parseC2bPayload(raw);
+  if (!payload) {
+    return NextResponse.json(
+      { ResultCode: 1, ResultDesc: "Invalid payment details." },
+    );
   }
 
   const smeId = await findC2bSme(payload.shortcode);

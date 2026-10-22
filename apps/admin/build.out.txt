@@ -3,3 +3,154 @@
    Creating an optimized production build ...
  ✓ Compiled successfully
    Linting and checking validity of types ...
+
+./src/lib/ui.ts
+15:19  Warning: React Hook useCallback received a function whose dependencies are unknown. Pass an inline function instead.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/110) ...
+   Generating static pages (27/110) 
+   Generating static pages (54/110) 
+   Generating static pages (82/110) 
+ ✓ Generating static pages (110/110)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ƒ /                                    1.8 kB          100 kB
+├ ○ /_not-found                          875 B          88.2 kB
+├ ƒ /account                             3.51 kB        90.8 kB
+├ ƒ /admin/loans                         1.7 kB          111 kB
+├ ƒ /admin/overview                      1.12 kB        97.1 kB
+├ ƒ /admin/reports                       1.33 kB         111 kB
+├ ƒ /admin/smes                          1.5 kB          111 kB
+├ ƒ /admin/transactions                  1.35 kB         120 kB
+├ ƒ /admin/transactions/[reference]      186 B          96.2 kB
+├ ƒ /admin/users                         5.2 kB         94.7 kB
+├ ƒ /api/agent/leads                     0 B                0 B
+├ ƒ /api/agent/leads/[id]                0 B                0 B
+├ ƒ /api/agent/leads/[id]/draft          0 B                0 B
+├ ƒ /api/agent/leads/[id]/score          0 B                0 B
+├ ƒ /api/agent/leads/[id]/send           0 B                0 B
+├ ƒ /api/agent/leads/suggest             0 B                0 B
+├ ƒ /api/agent/run                       0 B                0 B
+├ ƒ /api/auth/change-password            0 B                0 B
+├ ƒ /api/auth/login                      0 B                0 B
+├ ƒ /api/auth/logout                     0 B                0 B
+├ ƒ /api/auth/me                         0 B                0 B
+├ ƒ /api/auth/register                   0 B                0 B
+├ ƒ /api/banking/accounts                0 B                0 B
+├ ƒ /api/banking/transfer                0 B                0 B
+├ ƒ /api/billing                         0 B                0 B
+├ ƒ /api/billing/checkout                0 B                0 B
+├ ƒ /api/cards                           0 B                0 B
+├ ƒ /api/cards/[id]/toggle               0 B                0 B
+├ ƒ /api/cards/virtual/usdt              0 B                0 B
+├ ƒ /api/checkout                        0 B                0 B
+├ ƒ /api/crypto                          0 B                0 B
+├ ƒ /api/crypto/balance                  0 B                0 B
+├ ƒ /api/crypto/deposit                  0 B                0 B
+├ ƒ /api/crypto/withdraw                 0 B                0 B
+├ ƒ /api/customers                       0 B                0 B
+├ ƒ /api/dashboard/home                  0 B                0 B
+├ ƒ /api/insurance                       0 B                0 B
+├ ƒ /api/insurance/quote                 0 B                0 B
+├ ƒ /api/inventory/adjust                0 B                0 B
+├ ƒ /api/inventory/adjustments           0 B                0 B
+├ ƒ /api/inventory/low-stock             0 B                0 B
+├ ƒ /api/investments                     0 B                0 B
+├ ƒ /api/invoices                        0 B                0 B
+├ ƒ /api/ledger/balance                  0 B                0 B
+├ ƒ /api/ledger/transactions             0 B                0 B
+├ ƒ /api/loans                           0 B                0 B
+├ ƒ /api/loans/[id]/approve              0 B                0 B
+├ ƒ /api/loans/[id]/reject               0 B                0 B
+├ ƒ /api/loans/apply                     0 B                0 B
+├ ƒ /api/mpesa/c2b/confirmation          0 B                0 B
+├ ƒ /api/mpesa/c2b/reconciliation        0 B                0 B
+├ ƒ /api/mpesa/c2b/validation            0 B                0 B
+├ ƒ /api/mpesa/callback                  0 B                0 B
+├ ƒ /api/mpesa/stk                       0 B                0 B
+├ ƒ /api/onboarding/complete             0 B                0 B
+├ ƒ /api/onboarding/status               0 B                0 B
+├ ƒ /api/onboarding/step                 0 B                0 B
+├ ƒ /api/orders                          0 B                0 B
+├ ƒ /api/orders/[id]/confirm             0 B                0 B
+├ ƒ /api/orders/[id]/deliver             0 B                0 B
+├ ƒ /api/orders/[id]/ship                0 B                0 B
+├ ƒ /api/payments/p2p                    0 B                0 B
+├ ƒ /api/plans                           0 B                0 B
+├ ƒ /api/products                        0 B                0 B
+├ ƒ /api/products/[id]                   0 B                0 B
+├ ƒ /api/receipts                        0 B                0 B
+├ ƒ /api/receipts/next-number            0 B                0 B
+├ ƒ /api/refunds                         0 B                0 B
+├ ƒ /api/sales                           0 B                0 B
+├ ƒ /api/sales-pilot/forecast            0 B                0 B
+├ ƒ /api/sales-pilot/generate            0 B                0 B
+├ ƒ /api/sales-pilot/insights            0 B                0 B
+├ ƒ /api/sales-pilot/sync                0 B                0 B
+├ ƒ /api/sales/[id]                      0 B                0 B
+├ ƒ /api/savings                         0 B                0 B
+├ ƒ /api/savings/deposit                 0 B                0 B
+├ ƒ /api/savings/transactions            0 B                0 B
+├ ƒ /api/savings/withdraw                0 B                0 B
+├ ƒ /api/smes                            0 B                0 B
+├ ƒ /api/supplier-orders                 0 B                0 B
+├ ƒ /api/supplier-orders/[id]            0 B                0 B
+├ ƒ /api/suppliers                       0 B                0 B
+├ ƒ /api/team                            0 B                0 B
+├ ƒ /api/till                            0 B                0 B
+├ ƒ /api/tills                           0 B                0 B
+├ ƒ /api/users                           0 B                0 B
+├ ƒ /api/users/[id]                      0 B                0 B
+├ ƒ /api/users/[id]/password             0 B                0 B
+├ ƒ /api/users/[id]/subscription         0 B                0 B
+├ ƒ /api/wallet                          0 B                0 B
+├ ○ /apple-icon.png                      0 B                0 B
+├ ƒ /apps                                186 B          96.2 kB
+├ ƒ /billing                             177 B          87.5 kB
+├ ƒ /customer/cart                       2.29 kB         120 kB
+├ ƒ /customer/shop                       1.97 kB         120 kB
+├ ƒ /growth                              6.04 kB         102 kB
+├ ƒ /home                                1.11 kB        97.1 kB
+├ ○ /icon.svg                            0 B                0 B
+├ ƒ /login                               4.13 kB         100 kB
+├ ○ /manifest.webmanifest                0 B                0 B
+├ ƒ /neobank                             1.12 kB        97.1 kB
+├ ƒ /neobank/accounts                    178 B          87.5 kB
+├ ƒ /neobank/accounts/create             1.06 kB        88.4 kB
+├ ƒ /neobank/cards                       177 B          87.5 kB
+├ ƒ /neobank/crypto                      177 B          87.5 kB
+├ ƒ /neobank/crypto/deposit              5.01 kB        92.3 kB
+├ ƒ /neobank/crypto/withdraw             4.16 kB        91.5 kB
+├ ƒ /neobank/insurance                   177 B          87.5 kB
+├ ƒ /neobank/investments                 178 B          87.5 kB
+├ ○ /opengraph-image                     0 B                0 B
+├ ƒ /payments                            2.56 kB         112 kB
+├ ƒ /plans                               1.96 kB        89.3 kB
+├ ƒ /pos                                 5.58 kB         115 kB
+├ ƒ /register                            3.23 kB        99.2 kB
+├ ƒ /sme/customers                       3.35 kB        90.7 kB
+├ ƒ /sme/inventory                       3.4 kB          113 kB
+├ ƒ /sme/loans                           1.35 kB         111 kB
+├ ƒ /sme/onboarding                      4.13 kB        91.4 kB
+├ ƒ /sme/sales                           1.96 kB         111 kB
+├ ƒ /sme/savings                         1.43 kB         111 kB
+├ ƒ /sme/suppliers                       3.27 kB        90.6 kB
+├ ƒ /supplier/invoices                   957 B           110 kB
+├ ƒ /supplier/orders                     1.39 kB         111 kB
+└ ƒ /team                                3.77 kB        91.1 kB
++ First Load JS shared by all            87.3 kB
+  ├ chunks/2749-58ef9f7cb7412f9a.js      31.7 kB
+  ├ chunks/5b8f0dd8-b73edcca4fb628df.js  53.6 kB
+  └ other shared chunks (total)          1.96 kB
+
+
+ƒ Middleware                             26.6 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+EXIT=0  

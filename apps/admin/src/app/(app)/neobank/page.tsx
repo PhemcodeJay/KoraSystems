@@ -9,23 +9,24 @@ import { Tabs } from "@/components/dashboard/tabbed";
 
 // Mock crypto prices for display
 const CRYPTO_PRICES: Record<string, number> = {
-  BTC: 68500,
-  ETH: 3500,
+  BTC: 81500,
+  ETH: 2500,
   SOL: 150,
   USDT: 1.0,
   USDC: 1.0,
 };
 
 const SERVICES = [
-  { href: "/neobank/accounts", label: "Bank Accounts", hint: "Checking, Savings, Loans", icon: "\uD83C\uDFE6", tone: "brand" as const },
-  { href: "/neobank/crypto", label: "Crypto Wallets", hint: "USDT, USDC, BTC, ETH, SOL", icon: "\u20BF" },
-  { href: "/neobank/cards", label: "Cards", hint: "Physical & Virtual cards", icon: "\uD83D\uDC13" },
-  { href: "/neobank/investments", label: "Investments", hint: "Crypto portfolio", icon: "\u2696" },
+  { href: "/neobank/accounts", label: "Bank Accounts", hint: "Checking, Savings, Loans", icon: "🏦", tone: "brand" as const },
+  { href: "/neobank/crypto", label: "Crypto Wallets", hint: "USDT, USDC, BTC, ETH, SOL", icon: "₿" },
+  { href: "/neobank/cards", label: "Cards", hint: "Physical & Virtual cards", icon: "💳" },
+  { href: "/neobank/lending", label: "Lending", hint: "Apply for a business loan", icon: "💸" },
+  { href: "/neobank/investments", label: "Investments", hint: "Crypto portfolio", icon: "📈" },
 ];
 
 const MORE_SERVICES = [
-  { href: "/neobank/insurance", label: "Insurance Marketplace", hint: "Health, Auto, Travel, Device", icon: "\u2661" },
-  { href: "/plans", label: "Upgrade Plan", hint: "Access premium features", icon: "\u25C8" },
+  { href: "/neobank/insurance", label: "Insurance Marketplace", hint: "Health, Auto, Travel, Device", icon: "🛡️" },
+  { href: "/plans", label: "Upgrade Plan", hint: "Access premium features", icon: "⭐" },
 ];
 
 /** NeoBank Dashboard - Banking, Crypto, Cards, Investments, Insurance */
@@ -91,6 +92,15 @@ export default async function Page() {
             ),
           },
           {
+            id: "lending",
+            label: "Lending",
+            panel: (
+              <Card title="Business Lending" hint="Apply for a loan or check your application status">
+                <LendingSummary />
+              </Card>
+            ),
+          },
+          {
             id: "services",
             label: "More services",
             panel: (
@@ -131,6 +141,23 @@ function CryptoSummary() {
           <p className="mt-0.5 text-sm font-semibold text-ink-900">${price.toLocaleString()}</p>
         </div>
       ))}
+    </div>
+  );
+}
+
+function LendingSummary() {
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-ink-200 bg-ink-50 p-4">
+      <div>
+        <p className="font-medium text-ink-900">Business Lending</p>
+        <p className="text-xs text-ink-500">Apply for working capital &amp; track loan status</p>
+      </div>
+      <Link
+        href="/neobank/lending"
+        className="text-sm font-medium text-brand-600 hover:text-brand-700"
+      >
+        View lending →
+      </Link>
     </div>
   );
 }

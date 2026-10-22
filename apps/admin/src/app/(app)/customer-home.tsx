@@ -8,7 +8,8 @@ import { Tabs } from "@/components/dashboard/tabbed";
 
 const ACTIONS = [
   { href: "/customer/shop", label: "Shop", hint: "Browse what local businesses are selling", icon: "\uD83D\uDED2", tone: "brand" as const },
-  { href: "/payments", label: "Payments", hint: "M-Pesa, wallet and your purchase history", icon: "\u21C4" },
+  { href: "/customer/cart", label: "Cart", hint: "Review what you have picked", icon: "\uD83D\uDED1" },
+  { href: "/neobank", label: "NeoBank", hint: "Accounts, cards and payments", icon: "\uD83C\uDFE6" },
 ];
 
 /** The customer landing page, scoped to the signed-in shopper. */

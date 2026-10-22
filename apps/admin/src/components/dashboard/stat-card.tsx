@@ -65,7 +65,14 @@ export function KpiGrid({
   cards,
   className,
 }: {
-  cards: { label: string; value: string; delta?: { value: number; label: string } | null; hint?: string; tone?: StatCard["tone"]; action?: ReactNode }[];
+  cards: {
+    label: string;
+    value: string;
+    delta?: { value: number; label: string } | null;
+    hint?: string;
+    tone?: "default" | "brand" | "warning" | "success" | "danger";
+    action?: ReactNode;
+  }[];
   className?: string;
 }) {
   return (

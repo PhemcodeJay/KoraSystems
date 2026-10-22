@@ -39,13 +39,19 @@ export function SkeletonLine({ width = "60%" }: { width?: string }) {
 /**
  * A small inline "spinner" for buttons so the click feels instant.
  */
-export function LoadingSpinner({ size = 16 }: { size?: number }) {
+export function LoadingSpinner({
+  size = 16,
+  className = "",
+}: {
+  size?: number;
+  className?: string;
+}) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      className="animate-spin text-ink-500"
+      className={["animate-spin text-ink-500", className].filter(Boolean).join(" ")}
       fill="none"
     >
       <circle

@@ -94,7 +94,7 @@ export default function CryptoDepositPage() {
           gross: json.gross,
           fee: json.fee,
           net: json.net,
-          symbol: json.symbol ?? symbol,
+          symbol: json.wallet?.symbol ?? symbol,
           address: json.feeWallet ?? feeWallet,
         });
 

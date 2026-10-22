@@ -1,0 +1,109 @@
+c [ForbiddenError]: This area is for admin accounts.
+    at d (C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\apps\admin\.next\server\chunks\4120.js:1:3686)
+    at async m (C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\apps\admin\.next\server\app\(app)\home\page.js:1:5407) {
+  digest: '2629764460'
+}
+ ⨯ Error: Cannot find module 'C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\apps\admin\.next\server\app\(site)\page.js'
+Require stack:
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\next-server.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\next.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\lib\start-server.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\cli\next-start.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1517:15)
+    at C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1071:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1095:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1122:12)
+    at Module._load (node:internal/modules/cjs/loader:1294:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1617:12)
+    at mod.require (C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:153:16) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\next-server.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\next.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\lib\\start-server.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\cli\\next-start.js'
+  ]
+}
+ ⨯ Error: Cannot find module 'C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\apps\admin\.next\server\pages\_error.js'
+Require stack:
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\next-server.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\next.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\lib\start-server.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\cli\next-start.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1517:15)
+    at C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1071:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1095:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1122:12)
+    at Module._load (node:internal/modules/cjs/loader:1294:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1617:12)
+    at mod.require (C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:153:16) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\next-server.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\next.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\lib\\start-server.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\cli\\next-start.js'
+  ]
+}
+ ⨯ Error: Cannot find module 'C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\apps\admin\.next\server\app\favicon.ico\route.js'
+Require stack:
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\next-server.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\next.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\lib\start-server.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\cli\next-start.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1517:15)
+    at C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1071:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1095:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1122:12)
+    at Module._load (node:internal/modules/cjs/loader:1294:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1617:12)
+    at mod.require (C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:153:16) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\next-server.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\next.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\lib\\start-server.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\cli\\next-start.js'
+  ]
+}
+ ⨯ Error: Cannot find module 'C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\apps\admin\.next\server\pages\_error.js'
+Require stack:
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\next-server.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\next.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\lib\start-server.js
+- C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\cli\next-start.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1517:15)
+    at C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1071:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1095:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1122:12)
+    at Module._load (node:internal/modules/cjs/loader:1294:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1617:12)
+    at mod.require (C:\Users\Phemcode\Documents\Jobs\Clients\KoraSystems\node_modules\.pnpm\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:153:16) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\next-server.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\next.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\server\\lib\\start-server.js',
+    'C:\\Users\\Phemcode\\Documents\\Jobs\\Clients\\KoraSystems\\node_modules\\.pnpm\\next@14.2.35_react-dom@18.3.1_react@18.3.1__react@18.3.1\\node_modules\\next\\dist\\cli\\next-start.js'
+  ]
+}

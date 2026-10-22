@@ -17,7 +17,7 @@ const ORDER_STYLES: Record<string, string> = {
 const ACTIONS = [
   { href: "/supplier/orders", label: "Manage orders", hint: "Confirm, ship, deliver", icon: "\u25FB", tone: "brand" as const },
   { href: "/supplier/invoices", label: "Invoices", hint: "Billing and payments", icon: "\uD83D\uDCC3" },
-  { href: "/payments", label: "Payouts", hint: "Money received and due", icon: "\u21C4" },
+  { href: "/neobank", label: "NeoBank", hint: "Accounts, cards and payouts", icon: "\uD83C\uDFE6" },
 ];
 
 /** The supplier landing page, scoped to the signed-in supplier. */

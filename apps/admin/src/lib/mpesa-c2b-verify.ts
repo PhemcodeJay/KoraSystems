@@ -66,8 +66,29 @@ export const C2B_SIGNATURE_FIELDS = [
 /** How to read the raw multi-value response body (URL-encoded vs JSON). */
 export type C2bRawBody = Record<string, string | string[] | undefined>;
 
+/**
+ * Field names Daraja may use for the signature itself.
+ *
+ * `Hash` is not part of `stringToBeSigned` (it is the output, not an input),
+ * so it is looked up separately rather than through `c2bField`.
+ */
+export const C2B_SIGNATURE_HEADER = "Mpesa-C256-Hmac";
+export const C2B_SIGNATURE_FIELD = "Hash";
+
 /** Extract a single string field from a C2B response body. */
-export function c2bField(body: C2bRawBody, key: (typeof C2B_SIGNATURE_FIELDS)[number]): string {
+export function c2bField(
+  body: C2bRawBody,
+  key: (typeof C2B_SIGNATURE_FIELDS)[number],
+): string {
+  const value = body[key];
+  if (value === undefined) return "";
+  if (typeof value === "string") return value;
+  if (Array.isArray(value) && value.length > 0) return String(value[0]);
+  return "";
+}
+
+/** Read a named field that is not part of the signed string (e.g. `Hash`). */
+export function c2bRawField(body: C2bRawBody, key: string): string {
   const value = body[key];
   if (value === undefined) return "";
   if (typeof value === "string") return value;
@@ -127,9 +148,9 @@ export function verifyC2bSignature(body: C2bRawBody, requestHeaders: Headers): b
 
   // Read the signature from the request header (Daraja sends it both as a
   // `Hash` query/body parameter and as the `Mpesa-C256-Hmac` header).
-  const rawHeader = requestHeaders.get("Mpesa-C256-Hmac") ?? "";
+  const rawHeader = requestHeaders.get(C2B_SIGNATURE_HEADER) ?? "";
   const headerSignature = rawHeader.trim();
-  const bodySignature = c2bField(body as C2bRawBody, "Hash") as string;
+  const bodySignature = c2bRawField(body, C2B_SIGNATURE_FIELD);
 
   const supplied = headerSignature || bodySignature;
   if (!supplied) return true; // nothing to verify against

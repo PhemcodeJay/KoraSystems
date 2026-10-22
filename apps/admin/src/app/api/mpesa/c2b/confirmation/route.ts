@@ -4,10 +4,6 @@ import { findC2bSme } from "@/lib/mpesa-c2b";
 import { parseC2bPayload } from "@/lib/mpesa-c2b-payload";
 import { verifyC2bSignature, C2bSignedContentError } from "@/lib/mpesa-c2b-verify";
 
-type C2BPayload = {
-  TransTime?: unknown;
-};
-
 /**
  * Daraja signs the C2B confirmation with HMAC-SHA256 (the Mpesa-C256-Hmac
  * header). Verification is disabled by default and only enforced when
@@ -16,7 +12,30 @@ type C2BPayload = {
  * the signature is invalid, this returns a non-zero result so Daraja retries.
  */
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => null)) as C2BPayload | null;
+  // The RAW body is what Daraja signed. The normalised payload below uses
+  // different field names (`TransAmount` vs `Amount`), so verifying against it
+  // would build the wrong `stringToBeSigned` and reject every legitimate
+  // callback. Verify first, against the raw body.
+  const body = (await request.json().catch(() => null)) as Record<
+    string,
+    string | string[] | undefined
+  > | null;
+
+  if (!body || typeof body !== "object") {
+    return NextResponse.json(
+      { ResultCode: 1, ResultDesc: "Invalid payment details." },
+    );
+  }
+
+  try {
+    verifyC2bSignature(body, request.headers);
+  } catch (error) {
+    if (error instanceof C2bSignedContentError) {
+      return NextResponse.json({ ResultCode: 1, ResultDesc: "Invalid signature" });
+    }
+    throw error;
+  }
+
   const payload = parseC2bPayload(body);
   if (!payload) {
     return NextResponse.json(
@@ -24,14 +43,6 @@ export async function POST(request: Request) {
     );
   }
 
-  try {
-    verifyC2bSignature(payload, request.headers);
-  } catch (error) {
-    if (error instanceof C2bSignedContentError) {
-      return NextResponse.json({ ResultCode: 1, ResultDesc: "Invalid signature" });
-    }
-    throw error;
-  }
   const smeId = await findC2bSme(payload.shortcode);
   if (!smeId) {
     return NextResponse.json(
@@ -39,9 +50,10 @@ export async function POST(request: Request) {
     );
   }
 
+  const rawTransTime = body.TransTime;
   const transactionTime =
-    typeof body?.TransTime === "string" && /^\d{14}$/.test(body.TransTime)
-      ? body.TransTime
+    typeof rawTransTime === "string" && /^\d{14}$/.test(rawTransTime)
+      ? rawTransTime
       : null;
   const transaction = await prisma.transaction.upsert({
     where: { reference: `C2B-${payload.transactionId}` },

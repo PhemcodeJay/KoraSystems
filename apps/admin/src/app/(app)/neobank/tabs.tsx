@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import clsx from "clsx";
 
 const NAV_ITEMS = [
   { href: "/neobank", label: "Dashboard", icon: "🏠" },
@@ -38,11 +39,12 @@ export function NeobankTabs() {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={`flex-shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+            className={clsx(
+              "flex-shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition",
               active
                 ? "bg-brand-50 text-brand-800"
-                : "text-ink-600 hover:bg-ink-100 hover:text-ink-900"
-            }`}
+                : "text-ink-600 hover:bg-ink-100 hover:text-ink-900",
+            )}
           >
             <span aria-hidden className="mr-1">
               {item.icon}

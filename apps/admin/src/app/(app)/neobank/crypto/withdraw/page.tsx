@@ -99,9 +99,9 @@ export default function CryptoWithdrawPage() {
           gross: json.gross,
           fee: json.fee,
           total: json.total,
-          symbol: json.symbol ?? symbol,
+          symbol: json.wallet?.symbol ?? symbol,
           address: json.address ?? address,
-          balance: json.wallet?.balance ?? "",
+          balance: String(json.wallet?.balance ?? ""),
         });
 
         setAmount("");
