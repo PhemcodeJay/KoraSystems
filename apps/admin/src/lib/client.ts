@@ -203,7 +203,6 @@ export const api = {
   onboardingComplete: { method: "POST", path: "/api/onboarding/complete" },
   onboardingStatus: { method: "GET", path: "/api/onboarding/status" },
   mpesaStk: { method: "POST", path: "/api/mpesa/stk" },
-  mpesaB2C: { method: "POST", path: "/api/mpesa/b2c" },
   mpesaC2bReconciliation: {
     method: "GET",
     path: "/api/mpesa/c2b/reconciliation",

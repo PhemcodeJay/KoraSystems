@@ -23,13 +23,10 @@ const BASE: Record<string, string> = {
 /**
  * Public URL Daraja should post the STK result to.
  *
- * The project's `.env` defines `MPESA_CALLBACK_URL`, which the code was not
- * reading — it wanted `MPESA_RESULT_URL`, falling back to a
- * `NEXT_PUBLIC_APP_URL` base that is not set either. That fallback built the
- * literal string `undefined/api/mpesa/callback`, so Daraja was handed a
- * malformed callback URL and no push could ever complete even though the route
- * itself existed. Read what the environment actually defines, and report null
- * rather than constructing nonsense.
+ * Prefers `MPESA_CALLBACK_URL` (the canonical name in `.env.example`) when set,
+ * else `MPESA_RESULT_URL`, else `NEXT_PUBLIC_APP_URL`. Returns null when nothing
+ * is configured, so the caller can simulate rather than hand Daraja a
+ * malformed URL.
  */
 function callbackUrl(): string | null {
   const direct = process.env.MPESA_CALLBACK_URL || process.env.MPESA_RESULT_URL;
