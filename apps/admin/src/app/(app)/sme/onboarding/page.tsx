@@ -65,7 +65,7 @@ export default function OnboardingPage() {
         setBusinessName(s.businessName ?? "");
         setMpesaTill(s.mpesaTill ?? "");
         setMpesaPaybill(s.mpesaPaybill ?? "");
-        setPlatformPaybill(s.mpesaPaybillPlatform ?? "");
+        setPlatformPaybill(s.mpesaPaybill ?? "");
         setPlatformBusinessName(s.mpesaBusinessName ?? "");
         setPlatformTill(s.mpesaTillNumber ?? "");
         if (s.onboardingStep === "COMPLETE") setDone(true);

@@ -87,8 +87,14 @@ export async function POST(request: Request) {
   }
 
   // `.env` calls this `MPESA_ENVIRONMENT`; `MPESA_ENV` is kept as a fallback
-  // so either spelling works.
-  const env = process.env.MPESA_ENVIRONMENT ?? process.env.MPESA_ENV ?? "sandbox";
+  // so either spelling works. Anything other than exactly "production" is
+  // treated as sandbox — safe default so demo machines never hit real Daraja.
+  const base =
+    BASE[
+      (process.env.MPESA_ENVIRONMENT || process.env.MPESA_ENV || "sandbox") as
+        | keyof typeof BASE
+        | undefined
+    ] ?? BASE.sandbox;t env = process.env.MPESA_ENVIRONMENT ?? process.env.MPESA_ENV ?? "sandbox";
   const base = BASE[env] ?? BASE.sandbox;
   const accountCode = body.accountCode?.trim() || "PENDING";
   const reference = body.reference?.trim() || `STK-${Date.now()}`;
