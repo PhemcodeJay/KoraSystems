@@ -144,12 +144,12 @@ export async function POST(request: Request) {
     }
     const { access_token: token } = (await tokenRes.json()) as { access_token: string };
 
-    const password = Buffer.from(`${shortcode}${process.env.MPESA_PASSKEY}${timestamp}`).toString("base64");
-
     // Buy Goods (Till) vs Paybill — the platform owner accepts Buy Goods for
     // customer payments; platform subscriptions use the Paybill shortcode.
     const isBuyGoods = !!process.env.MPESA_TILL_NUMBER;
     const shortcode = isBuyGoods ? process.env.MPESA_TILL_NUMBER : process.env.MPESA_SHORTCODE;
+
+    const password = Buffer.from(`${shortcode}${process.env.MPESA_PASSKEY}${timestamp}`).toString("base64");
 
     const stkRes = await fetch(`${base}/mpesa/stkpush/v1/processrequest`, {
       method: "POST",
