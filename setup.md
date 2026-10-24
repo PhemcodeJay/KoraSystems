@@ -70,6 +70,16 @@ In the Render dashboard, go to your web service → **Environment**, and add the
 | Variable | Value / Notes |
 |----------|---------------|
 | `KORA_DEMO_PASSWORD` | Set to `Demo@1234` to allow shared-password sign-in for seeded accounts. **Remove this in production.** |
+| `MPESA_PAYBILL` | M-Pesa Buy Goods / Till number — customer pays SME for goods (displayed in checkout and onboarding status). |
+| `MPESA_BUSINESS_NAME` | Display name for the platform paybill. |
+| `TRON_FEE_WALLET` | TRON fee treasury address (platform fees per chain). |
+| `SOLANA_FEE_WALLET` | Solana fee treasury address (platform fees per chain). |
+| `TRON_DEPOSIT_WALLET` | TRON hot wallet for user deposits and withdrawal origins. |
+| `SOLANA_DEPOSIT_WALLET` | Solana hot wallet for user deposits and withdrawal origins. |
+| `NEXT_PUBLIC_TRON_FEE_WALLET` | Public frontend variant of TRON fee wallet. |
+| `NEXT_PUBLIC_SOLANA_FEE_WALLET` | Public frontend variant of Solana fee wallet. |
+| `NEXT_PUBLIC_TRON_DEPOSIT_WALLET` | Public frontend variant of TRON deposit wallet. |
+| `NEXT_PUBLIC_SOLANA_DEPOSIT_WALLET` | Public frontend variant of Solana deposit wallet. |
 | `KORA_ALLOW_DEMO_LOGIN` | Set to `true` only if you also want demo password login enabled in production. Leave empty/unset for production. |
 | `DISBURSEMENT_PROVIDER` | `simulated` (default). Keep `simulated` until you have a licensed disbursement partner. Simulated loans write ledger entries flagged `simulated: true` and move no money. |
 | `KORA_SEED_DEMO` | `true` to load the demo dataset on deploy. Set to `false` or remove for production. |
@@ -184,6 +194,26 @@ services:
         value: simulated
       - key: KORA_SEED_DEMO
         value: "true"
+      - key: MPESA_PAYBILL
+        value: ""
+      - key: MPESA_BUSINESS_NAME
+        value: ""
+      - key: TRON_FEE_WALLET
+        value: ""
+      - key: SOLANA_FEE_WALLET
+        value: ""
+      - key: TRON_DEPOSIT_WALLET
+        value: ""
+      - key: SOLANA_DEPOSIT_WALLET
+        value: ""
+      - key: NEXT_PUBLIC_TRON_FEE_WALLET
+        value: ""
+      - key: NEXT_PUBLIC_SOLANA_FEE_WALLET
+        value: ""
+      - key: NEXT_PUBLIC_TRON_DEPOSIT_WALLET
+        value: ""
+      - key: NEXT_PUBLIC_SOLANA_DEPOSIT_WALLET
+        value: ""
 
 databases:
   - name: kora-db
@@ -206,6 +236,8 @@ Then in Render: **Blueprint** → connect the repo → Render creates the databa
 
 - [ ] `KORA_DEMO_PASSWORD` removed (and `KORA_ALLOW_DEMO_LOGIN` unset)
 - [ ] `SESSION_SECRET` and `JWT_SECRET` are fresh random values, not placeholders
+- [ ] Crypto fee treasury and deposit wallet addresses set for TRON and Solana (not placeholder)
+- [ ] M-Pesa Buy Goods / Till (`MPESA_PAYBILL`, `MPESA_BUSINESS_NAME`) configured if live customer payments are needed
 - [ ] `NEXT_PUBLIC_APP_URL` points at your real Render domain (no localhost)
 - [ ] `DISBURSEMENT_PROVIDER=simulated` until a licensed partner is contracted
 - [ ] Database credentials rotated if they ever appeared in a committed `.env`

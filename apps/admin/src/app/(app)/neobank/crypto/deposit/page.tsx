@@ -30,6 +30,10 @@ const FEE_WALLETS: Record<string, string> = {
   tron: process.env.NEXT_PUBLIC_TRON_FEE_WALLET ?? "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE",
   solana: process.env.NEXT_PUBLIC_SOLANA_FEE_WALLET ?? "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
 };
+const DEPOSIT_WALLETS: Record<string, string> = {
+  tron: process.env.NEXT_PUBLIC_TRON_DEPOSIT_WALLET ?? "",
+  solana: process.env.NEXT_PUBLIC_SOLANA_DEPOSIT_WALLET ?? "",
+};
 
 type DepositResult = {
   txHash: string;
@@ -38,6 +42,7 @@ type DepositResult = {
   net: string;
   symbol: string;
   address: string;
+  depositWallet: string;
 };
 
 /**
@@ -64,6 +69,7 @@ export default function CryptoDepositPage() {
 
   const chain = chainForAsset(symbol);
   const feeWallet = FEE_WALLETS[chain];
+  const depositWallet = DEPOSIT_WALLETS[chain];
 
   const copyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [copied, setCopied] = useState(false);
@@ -95,7 +101,8 @@ export default function CryptoDepositPage() {
           fee: json.fee,
           net: json.net,
           symbol: json.wallet?.symbol ?? symbol,
-          address: json.feeWallet ?? feeWallet,
+          address: json.depositWallet ?? depositWallet,
+          depositWallet: json.depositWallet ?? depositWallet,
         });
 
         setAmount("");
@@ -111,7 +118,7 @@ export default function CryptoDepositPage() {
 
   const handleCopy = useCallback(() => {
     if (copyTimeout.current) clearTimeout(copyTimeout.current);
-    navigator.clipboard.writeText(feeWallet).catch(() => {});
+    navigator.clipboard.writeText(depositWallet).catch(() => {});
     setCopied(true);
     copyTimeout.current = setTimeout(() => setCopied(false), 1500);
   }, [feeWallet]);
@@ -210,7 +217,7 @@ export default function CryptoDepositPage() {
           <input
             type="text"
             readOnly
-            value={feeWallet}
+            value={depositWallet}
             className="flex-1 rounded-md border border-ink-200 px-3 py-2 text-sm text-ink-900 font-mono bg-ink-50"
           />
           <button

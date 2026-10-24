@@ -18,6 +18,15 @@ const CHAIN_LABELS: Record<string, string> = {
 const chainForAsset = (asset: string): "tron" | "solana" =>
   asset === "USDT" || asset === "USDC" ? "tron" : "solana";
 
+const FEE_WALLETS: Record<string, string> = {
+  tron: process.env.NEXT_PUBLIC_TRON_FEE_WALLET ?? "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE",
+  solana: process.env.NEXT_PUBLIC_SOLANA_FEE_WALLET ?? "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
+};
+const DEPOSIT_WALLETS: Record<string, string> = {
+  tron: process.env.NEXT_PUBLIC_TRON_DEPOSIT_WALLET ?? "",
+  solana: process.env.NEXT_PUBLIC_SOLANA_DEPOSIT_WALLET ?? "",
+};
+
 type WithdrawResult = {
   txHash: string;
   gross: string;
@@ -26,6 +35,8 @@ type WithdrawResult = {
   symbol: string;
   address: string;
   balance: string;
+  feeWallet: string;
+  depositWallet: string;
 };
 
 function useDebounceValue(value: string, ms: number): string {
@@ -49,6 +60,8 @@ export default function CryptoWithdrawPage() {
   const [done, setDone] = useState<WithdrawResult | null>(null);
 
   const chain = chainForAsset(symbol);
+  const feeWallet = FEE_WALLETS[chain];
+  const depositWallet = DEPOSIT_WALLETS[chain];
 
   const balanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -102,6 +115,8 @@ export default function CryptoWithdrawPage() {
           symbol: json.wallet?.symbol ?? symbol,
           address: json.address ?? address,
           balance: String(json.wallet?.balance ?? ""),
+          feeWallet: json.feeWallet ?? feeWallet,
+          depositWallet: json.depositWallet ?? depositWallet,
         });
 
         setAmount("");
@@ -255,6 +270,14 @@ export default function CryptoWithdrawPage() {
             <dt className="text-ink-500">Sent to</dt>
             <dd className="col-span-2 text-ink-900 font-mono text-xs break-all">
               {done.address}
+            </dd>
+            <dt className="text-ink-500">Fee wallet</dt>
+            <dd className="col-span-2 text-ink-900 font-mono text-xs break-all">
+              {done.feeWallet}
+            </dd>
+            <dt className="text-ink-500">Deposit wallet</dt>
+            <dd className="col-span-2 text-ink-900 font-mono text-xs break-all">
+              {done.depositWallet}
             </dd>
           </dl>
           <p className="mt-3 text-xs text-ink-500">

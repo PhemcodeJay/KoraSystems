@@ -15,6 +15,10 @@ const FEE_WALLETS = {
   tron: process.env.TRON_FEE_WALLET || "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE",
   solana: process.env.SOLANA_FEE_WALLET || "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
 };
+const DEPOSIT_WALLETS = {
+  tron: process.env.TRON_DEPOSIT_WALLET || "",
+  solana: process.env.SOLANA_DEPOSIT_WALLET || "",
+};
 
 const INVESTMENT_FEE_PERCENT = Number(process.env.INVESTMENT_FEE_PERCENT ?? 5);
 const MIN_FEE = Number(process.env.MIN_FEE_USDT ?? 0.01);
@@ -140,6 +144,7 @@ export async function POST(req: Request) {
       total: total.toFixed(8),
       address,
       feeWallet: FEE_WALLETS[chainForAsset(asset)],
+      depositWallet: DEPOSIT_WALLETS[chainForAsset(asset)],
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

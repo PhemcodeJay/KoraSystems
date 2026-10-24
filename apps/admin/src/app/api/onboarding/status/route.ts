@@ -32,5 +32,10 @@ export async function GET() {
     return NextResponse.json({ error: "Business not found." }, { status: 404 });
   }
 
-  return NextResponse.json({ data: sme });
+  return NextResponse.json({
+    data: sme,
+    mpesaPaybill: process.env.MPESA_PAYBILL || "",
+    mpesaTillNumber: process.env.MPESA_TILL_NUMBER || "",
+    mpesaBusinessName: process.env.MPESA_BUSINESS_NAME || "",
+  });
 }

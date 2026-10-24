@@ -120,6 +120,9 @@ export async function POST(request: Request) {
       tier,
       cycle,
       amount,
+      mpesaPaybill: process.env.MPESA_PAYBILL || "",
+      mpesaTillNumber: process.env.MPESA_TILL_NUMBER || "",
+      mpesaBusinessName: process.env.MPESA_BUSINESS_NAME || "",
       message: "Checkout opened. Complete the M-Pesa prompt to activate the plan.",
     });
   } catch {

@@ -40,10 +40,11 @@ const configured = () =>
   !!(
     process.env.MPESA_CONSUMER_KEY &&
     process.env.MPESA_CONSUMER_SECRET &&
-    process.env.MPESA_SHORTCODE &&
     process.env.MPESA_PASSKEY &&
-    // Without somewhere for Daraja to report the result, an STK push would be
-    // fired with no way to learn its outcome — every payment would hang.
+    // Either a Paybill shortcode OR a Buy Goods Till number must be present —
+    // the platform owner accepts Buy Goods (Till) for customer payments, while
+    // platform subscriptions use the Paybill. Both are valid Daraja shortcodes.
+    (process.env.MPESA_SHORTCODE || process.env.MPESA_TILL_NUMBER) &&
     callbackUrl()
   );
 
@@ -143,22 +144,27 @@ export async function POST(request: Request) {
     }
     const { access_token: token } = (await tokenRes.json()) as { access_token: string };
 
-    const password = Buffer.from(`${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`).toString("base64");
+    const password = Buffer.from(`${shortcode}${process.env.MPESA_PASSKEY}${timestamp}`).toString("base64");
+
+    // Buy Goods (Till) vs Paybill — the platform owner accepts Buy Goods for
+    // customer payments; platform subscriptions use the Paybill shortcode.
+    const isBuyGoods = !!process.env.MPESA_TILL_NUMBER;
+    const shortcode = isBuyGoods ? process.env.MPESA_TILL_NUMBER : process.env.MPESA_SHORTCODE;
 
     const stkRes = await fetch(`${base}/mpesa/stkpush/v1/processrequest`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        BusinessShortCode: process.env.MPESA_SHORTCODE,
+        BusinessShortCode: shortcode,
         Password: password,
         Timestamp: timestamp,
-        TransactionType: "CustomerPayBillOnline",
+        TransactionType: isBuyGoods ? "CustomerBuyGoodsOnline" : "CustomerPayBillOnline",
         Amount: amount,
         PartyA: phone,
-        PartyB: process.env.MPESA_SHORTCODE,
+        PartyB: shortcode,
         PhoneNumber: phone,
         CallBackURL: callbackUrl(),
-        AccountReference: reference,
+        AccountReference: isBuyGoods ? "" : reference,
         TransactionDesc: body.description?.trim() || `Payment to ${auth.user.fullName}`,
       }),
     });

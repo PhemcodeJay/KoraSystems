@@ -18,6 +18,7 @@ available.
   human review; scoring does not approve or disburse loans.
 - Sales-history demand estimates surfaced in inventory.
 - M-Pesa STK support when Daraja is configured.
+- M-Pesa buy goods / Till (`MPESA_PAYBILL` / `MPESA_BUSINESS_NAME`) exposed on checkout and onboarding status for customer payments.
 - M-Pesa C2B callback capture and manual reconciliation to a completed sale.
   Callbacks are not cryptographically authenticated by this app. Verify the
   receipt in the merchant statement or Daraja portal before reconciling it.
@@ -161,6 +162,28 @@ Daraja credentials are optional for local development. Configure the relevant
 Paybill or Till, register the public C2B validation and confirmation endpoints
 shown in `.env.example` with that merchant's Daraja account.
 
+### M-Pesa buy goods (Lipa Na M-Pesa)
+
+The SME's M-Pesa buy goods / Till credentials (`MPESA_PAYBILL`, `MPESA_BUSINESS_NAME`)
+are exposed on checkout and onboarding status so customers can pay the SME for
+goods. They are returned by the checkout (`/api/billing/checkout`) and
+onboarding-status (`/api/onboarding/status`) endpoints as `mpesaPaybill` /
+`mpesaBusinessName` (checkout) and `mpesaPaybillPlatform` / `mpesaBusinessName`
+(onboarding status).
+
+### Crypto wallets
+
+Deposit hot wallets are separated from fee treasury wallets per chain:
+
+| Chain | Fee treasury | Deposit hot wallet | Public frontend variant |
+|-------|-------------|-------------------|------------------------|
+| TRON | `TRON_FEE_WALLET` | `TRON_DEPOSIT_WALLET` | `NEXT_PUBLIC_TRON_DEPOSIT_WALLET` |
+| Solana | `SOLANA_FEE_WALLET` | `SOLANA_DEPOSIT_WALLET` | `NEXT_PUBLIC_SOLANA_DEPOSIT_WALLET` |
+
+Deposit and withdraw routes return both `feeWallet` and `depositWallet` per chain.
+The frontend crypto deposit page sends funds to `depositWallet`; the fee treasury
+wallet (`feeWallet`) is the platform's treasury address, not a deposit destination.
+
 C2B callbacks are stored as unreconciled records and do not post to the ledger.
 An authorized user must verify the payment in the merchant statement or Daraja
 portal, then reconcile it to an unreceipted, completed M-Pesa sale for the exact
@@ -204,6 +227,8 @@ project configuration, and deployment access are still required.
 | SME onboarding and recovery | ✅ Implemented |
 | Public landing page | ✅ Built |
 | M-Pesa C2B callback capture and manual reconciliation | 🟡 Implemented; merchant registration and live verification remain |
+| Crypto deposit hot wallet + fee treasury separation (TRON, Solana) | ✅ Implemented |
+| M-Pesa buy goods / Till for customer payments | ✅ Implemented |
 | Deploy to Vercel | ⏳ Project setup and live deployment remain |
 | Get first client | ⏳ Requires a qualified prospect and authorized outreach |
 | Offline POS | ⏳ Not started |

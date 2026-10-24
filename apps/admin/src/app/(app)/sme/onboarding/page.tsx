@@ -10,6 +10,9 @@ type Status = {
   businessName: string;
   mpesaTill: string | null;
   mpesaPaybill: string | null;
+  mpesaPaybillPlatform?: string;
+  mpesaBusinessName?: string;
+  mpesaTillNumber?: string;
 };
 
 const STEPS: Step[] = ["business", "products", "payments"];
@@ -51,6 +54,10 @@ export default function OnboardingPage() {
   const [mpesaTill, setMpesaTill] = useState("");
   const [mpesaPaybill, setMpesaPaybill] = useState("");
 
+  const [platformPaybill, setPlatformPaybill] = useState("");
+  const [platformBusinessName, setPlatformBusinessName] = useState("");
+  const [platformTill, setPlatformTill] = useState("");
+
   useEffect(() => {
     apiJson<Status>(api.onboardingStatus.path)
       .then((s) => {
@@ -58,6 +65,9 @@ export default function OnboardingPage() {
         setBusinessName(s.businessName ?? "");
         setMpesaTill(s.mpesaTill ?? "");
         setMpesaPaybill(s.mpesaPaybill ?? "");
+        setPlatformPaybill(s.mpesaPaybillPlatform ?? "");
+        setPlatformBusinessName(s.mpesaBusinessName ?? "");
+        setPlatformTill(s.mpesaTillNumber ?? "");
         if (s.onboardingStep === "COMPLETE") setDone(true);
         else if (s.onboardingStep === "PAYMENTS") setStep("payments");
         else if (s.onboardingStep === "PRODUCTS") setStep("products");
@@ -263,6 +273,33 @@ export default function OnboardingPage() {
                   onChange={(e) => setMpesaPaybill(e.target.value)}
                 />
               </div>
+
+              {platformPaybill && (
+                <div className="mt-4 rounded-lg border border-brand-200 bg-brand-50 p-3">
+                  <h4 className="text-xs font-semibold text-brand-700 uppercase tracking-wide mb-1">
+                    Platform Paybill (subscription / onboarding payments)
+                  </h4>
+                  <p className="text-sm text-ink-700">
+                    Pay to <strong>{platformPaybill}</strong>{" "}
+                    {platformBusinessName && (
+                      <span className="text-ink-500">— {platformBusinessName}</span>
+                    )}
+                    <br className="hidden sm:block" />
+                    Use your phone number as the account reference.
+                  </p>
+                </div>
+              )}
+              {platformTill && (
+                <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3">
+                  <h4 className="text-xs font-semibold text-green-700 uppercase tracking-wide mb-1">
+                    Platform Buy Goods / Till (customer pays you)
+                  </h4>
+                  <p className="text-sm text-ink-700">
+                    Customers pay to Till <strong>{platformTill}</strong> for
+                    goods and services.
+                  </p>
+                </div>
+              )}
             </>
           )}
         </div>
