@@ -36,6 +36,10 @@ yarn-debug.log*
 yarn-error.log*
 .replit
 
+# Build output captured during diagnosis — never commit these
+build.out.txt
+build.err.txt
+
 # misc
 .DS_Store
 *.pem
