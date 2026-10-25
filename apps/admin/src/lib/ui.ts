@@ -17,7 +17,7 @@ export function useDebounce<T extends (...args: any[]) => void>(
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => fn.current(...args), ms);
     }) as T,
-    [ms]
+    [ms, fn]
   );
 
   const flush = useCallback(() => {
