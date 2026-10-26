@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: korasystems
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: pnpm install && pnpm build
+    startCommand: pnpm start --filter=admin
+    preDeployCommand: pnpm --filter @kora/database migrate:deploy
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kora-db
+          property: connectionString
+      - key: DIRECT_URL
+        fromDatabase:
+          name: kora-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: DISBURSEMENT_PROVIDER
+        value: simulated
+      - key: KORA_DEMO_PASSWORD
+        value: ""
+      - key: KORA_ALLOW_DEMO_LOGIN
+        value: ""
+
+databases:
+  - name: kora-db
+    databaseName: kora
+    plan: free

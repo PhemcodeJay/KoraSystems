@@ -145,3 +145,4 @@ export function forecastDemand(
     model: "seasonal-naive-v1",
   };
 }
+

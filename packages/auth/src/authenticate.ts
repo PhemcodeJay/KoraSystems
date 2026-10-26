@@ -90,7 +90,18 @@ export async function authenticate(
   const demoPassword = demoLoginEnabled() ? process.env.KORA_DEMO_PASSWORD : undefined;
   const demoMatches = !!demoPassword && password === demoPassword;
 
-  if (!hashMatches && !demoMatches) return null;
+  if (!hashMatches && !demoMatches) {
+    // Log demo login attempts in production for security auditing.
+    if (
+      process.env.NODE_ENV === "production" &&
+      process.env.KORA_ALLOW_DEMO_LOGIN !== "true" &&
+      demoPassword &&
+      password === demoPassword
+    ) {
+      console.error(`[SECURITY] Demo login attempt blocked: email=${email}, NODE_ENV=${process.env.NODE_ENV}, KORA_ALLOW_DEMO_LOGIN=${process.env.KORA_ALLOW_DEMO_LOGIN}`);
+    }
+    return null;
+  }
 
   // Opportunistic rehash: only ever on a genuine credential match, so this
   // cannot be used to make the server hash attacker-supplied strings.
