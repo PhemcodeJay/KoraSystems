@@ -900,6 +900,7 @@ async function seedCredit(smes: Seeded[], adminUserId: string) {
     });
 
     const per = round2(totalPayable / term);
+    let totalPaid = 0;
     for (let k = 1; k <= term; k++) {
       const dueDate = daysAgo(term * 30 - k * 30);
       const paid = target === "SETTLED" ? true : dueDate < new Date() && chance(rng, 0.85);
@@ -920,7 +921,22 @@ async function seedCredit(smes: Seeded[], adminUserId: string) {
           simulated: true,
         },
       });
+      if (paid) totalPaid = round2(totalPaid + per);
     }
+    await prisma.loan.update({
+      where: { id: loan.id },
+      data: {
+        amountRepaid: totalPaid,
+        status:
+          target === "SETTLED"
+            ? "SETTLED"
+            : totalPaid >= totalPayable
+              ? "SETTLED"
+              : totalPaid > 0
+                ? "REPAYING"
+                : target,
+      },
+    });
     loanCount++;
   }
   console.log(`  credit scores + loans: ${loanCount}`);

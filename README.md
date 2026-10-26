@@ -20,8 +20,8 @@ available.
 - M-Pesa STK support when Daraja is configured.
 - M-Pesa buy goods / Till (`MPESA_PAYBILL` / `MPESA_BUSINESS_NAME`) exposed on checkout and onboarding status for customer payments.
 - M-Pesa C2B callback capture and manual reconciliation to a completed sale.
-  Callbacks are not cryptographically authenticated by this app. Verify the
-  receipt in the merchant statement or Daraja portal before reconciling it.
+  Callbacks are verified with HMAC-SHA256 when `MPESA_C2B_VERIFY_SIGNATURES=true`
+  and `MPESA_C2B_SECRET` (or `MPESA_PASSKEY`) is configured.
 - A public landing page.
 - Low-stock inventory endpoint (`GET /api/inventory/low-stock`) for the POS
   dashboard, returning products at or below their reorder threshold.

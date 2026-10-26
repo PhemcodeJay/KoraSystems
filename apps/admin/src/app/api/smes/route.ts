@@ -2,13 +2,29 @@ import { prisma } from "@kora/database";
 import { withAuth } from "@kora/auth";
 import { NextResponse } from "next/server";
 
-/**
- * Every business on the platform, with its linked account and counts.
- *
- * Platform-wide by nature, so this is ADMIN-only. The dashboard reads
- * `.length`, and the response is a bare array to match /api/sales and the
- * other list routes it reads alongside this one.
- */
+export async function GET() {
+  const auth = await withAuth("ADMIN");
+  if (auth.response) return auth.response;
+
+  const smes = await prisma.sME.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      businessName: true,
+      businessType: true,
+      county: true,
+      town: true,
+      onboardingStatus: true,
+      subscriptionStatus: true,
+      subscriptionAmount: true,
+      user: { select: { email: true, fullName: true, isActive: true } },
+      _count: { select: { sales: true, products: true, loans: true } },
+    },
+  });
+
+  return NextResponse.json(smes);
+}
+
 export async function POST(req: Request) {
   const auth = await withAuth("ADMIN");
   if (auth.response) return auth.response;
@@ -24,6 +40,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "businessName is required" }, { status: 400 });
   }
 
+  const phone = `254${Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000}`;
+
   const sme = await prisma.sME.create({
     data: {
       businessName,
@@ -35,9 +53,10 @@ export async function POST(req: Request) {
       mpesaPaybill: mpesaPaybill as string | null,
       user: {
         create: {
+          authUserId: crypto.randomUUID(),
           email: `sme+${crypto.randomUUID()}@demo.kora.co.ke`,
           fullName: businessName,
-          phone: `254${int(10000000, 99999999).toString()}`,
+          phone,
           role: "SME",
         },
       },

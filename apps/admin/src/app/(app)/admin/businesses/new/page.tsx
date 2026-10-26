@@ -1,6 +1,6 @@
-use client;
+'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function NewBusinessPage() {
@@ -10,7 +10,7 @@ export default function NewBusinessPage() {
   const [mpesaPaybill, setMpesaPaybill] = useState('');
   const router = useRouter();
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const res = await fetch('/api/smes', {
       method: 'POST',
