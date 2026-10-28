@@ -39,6 +39,18 @@ function smtpConfigured(): boolean {
   );
 }
 
+// Gmail SMTP configuration helper
+function getSmtpConfig() {
+  const host = process.env.SMTP_HOST || "smtp.gmail.com";
+  const port = Number(process.env.SMTP_PORT || 587);
+  return {
+    host,
+    port,
+    secure: port === 465,
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+  };
+}
+
 /**
  * Should this send go through a real server?
  *
@@ -50,6 +62,15 @@ function smtpEnabled(): boolean {
   const forced = process.env.EMAIL_PROVIDER?.toLowerCase();
   if (forced === "simulated") return false;
   if (forced === "smtp") return true;
+  // In production, require real SMTP — no silent fallback to simulated
+  if (process.env.NODE_ENV === "production") {
+    if (!smtpConfigured()) {
+      throw new Error(
+        "SMTP is required in production. Set SMTP_HOST, SMTP_USER, and SMTP_PASS."
+      );
+    }
+    return true;
+  }
   return smtpConfigured();
 }
 
@@ -84,13 +105,7 @@ export async function sendEmail(input: {
     return { simulated: true, provider: "simulated", messageId };
   }
 
-  const port = Number(process.env.SMTP_PORT || 587);
-  const transport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure: port === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  });
+  const transport = nodemailer.createTransport(getSmtpConfig());
   const info = await transport.sendMail({
     from: fromAddress(),
     to,

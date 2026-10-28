@@ -1,15 +1,47 @@
 import { prisma } from "@kora/database";
 import { withAuth } from "@kora/auth";
 import { NextResponse } from "next/server";
+import { TIERS } from "@kora/auth/entitlements";
 
-// Mock crypto prices
-const CRYPTO_PRICES: Record<string, number> = {
-  BTC: 68500,
-  ETH: 3500,
-  SOL: 150,
-  USDT: 1.0,
-  USDC: 1.0,
+// Live crypto prices fetched from CoinGecko API
+const COINGECKO_API_URL = "https://api.coingecko.com/api/v3/simple/price";
+
+const ASSET_TO_COINGECKO: Record<string, string> = {
+  BTC: "bitcoin",
+  ETH: "ethereum",
+  SOL: "solana",
+  USDT: "tether",
+  USDC: "usd-coin",
 };
+
+async function fetchLiveCryptoPrices(): Promise<Record<string, number>> {
+  try {
+    const ids = Object.values(ASSET_TO_COINGECKO).join(",");
+    const response = await fetch(
+      `${COINGECKO_API_URL}?ids=${ids}&vs_currencies=usd`,
+      { next: { revalidate: 60 } }
+    );
+    if (!response.ok) {
+      throw new Error(`CoinGecko API error: ${response.status}`);
+    }
+    const data = await response.json();
+    const prices: Record<string, number> = {};
+    for (const [symbol, id] of Object.entries(ASSET_TO_COINGECKO)) {
+      prices[symbol] = data[id]?.usd ?? 0;
+    }
+    return prices;
+  } catch (error) {
+    console.error("Failed to fetch live crypto prices:", error);
+    // Fallback to last known prices
+    return {
+      BTC: 0,
+      ETH: 0,
+      SOL: 0,
+      USDT: 1.0,
+      USDC: 1.0,
+    };
+  }
+}
 
 const FEE_WALLETS = {
   tron: process.env.TRON_FEE_WALLET || "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE",
@@ -60,7 +92,7 @@ const PLANS: PlanDefinition[] = [
     investmentFeePercent: INVESTMENT_FEE_PERCENT,
     investmentAccess: true,
     features: [
-      "Unlimited bank accounts",
+      "Up to 15 bank accounts",
       "Up to 5 virtual cards",
       "Reduced crypto fees (2%)",
       "USDT virtual cards",

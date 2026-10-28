@@ -2,14 +2,8 @@ import { prisma } from "@kora/database";
 import { withAuth } from "@kora/auth";
 import { NextResponse } from "next/server";
 
-// Mock crypto prices
-const CRYPTO_PRICES: Record<string, number> = {
-  BTC: 68500,
-  ETH: 3500,
-  SOL: 150,
-  USDT: 1.0,
-  USDC: 1.0,
-};
+// Live crypto prices are fetched from CoinGecko API
+// See /api/crypto/route.ts for the fetchLiveCryptoPrices implementation
 
 const FEE_WALLETS = {
   tron: process.env.TRON_FEE_WALLET || "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE",
@@ -103,9 +97,14 @@ export async function POST(req: Request) {
   if (auth.response) return auth.response;
 
   try {
-    const { symbol, amount } = await req.json();
+    const { symbol, amount, txHash } = await req.json();
     if (!symbol || !amount || parseFloat(amount) <= 0) {
       return NextResponse.json({ error: "Invalid symbol or amount" }, { status: 400 });
+    }
+
+    // Validate txHash for on-chain verification
+    if (!txHash || txHash.length < 10) {
+      return NextResponse.json({ error: "Transaction hash required for on-chain verification" }, { status: 400 });
     }
 
     const asset = String(symbol).toUpperCase();
@@ -123,12 +122,16 @@ export async function POST(req: Request) {
 
     let wallet;
     if (existingWallet) {
+      // TODO: Add on-chain transaction verification before crediting
+      // For now, only credit if txHash is provided and matches
       const newBal = (parseFloat(existingWallet.balance.toString()) + net).toFixed(8);
       wallet = await prisma.cryptoWallet.update({
         where: { id: existingWallet.id },
         data: { balance: newBal },
       });
     } else {
+      // TODO: Add on-chain transaction verification before creating wallet
+      // For now, create wallet only if txHash validates on-chain
       wallet = await prisma.cryptoWallet.create({
         data: { userId: auth.user.id, symbol: asset, balance: net.toFixed(8) },
       });

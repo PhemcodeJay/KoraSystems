@@ -2,7 +2,7 @@ import { prisma } from "@kora/database";
 import { withAuth, requireScope } from "@kora/auth";
 import { NextResponse } from "next/server";
 
-// GET /api/cards - Get user's cards
+// GET /api/banking/cards - Get user's cards
 export async function GET() {
   const auth = await withAuth("SME", "ADMIN", "SUPPLIER", "CUSTOMER");
   if (auth.response) return auth.response;
@@ -16,7 +16,7 @@ export async function GET() {
   return NextResponse.json({ cards });
 }
 
-// POST /api/cards - Create a new card
+// POST /api/banking/cards - Create a new card
 export async function POST(req: Request) {
   const auth = await withAuth("SME", "ADMIN", "SUPPLIER", "CUSTOMER");
   if (auth.response) return auth.response;

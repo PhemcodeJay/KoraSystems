@@ -28,6 +28,22 @@ services:
         value: ""
       - key: KORA_ALLOW_DEMO_LOGIN
         value: ""
+      - key: SMTP_HOST
+        value: "smtp.gmail.com"
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        fromSecret: gmail-user
+      - key: SMTP_PASS
+        fromSecret: gmail-app-password
+      - key: EMAIL_FROM
+        value: "Kora Growth <no-reply@korasystems.com>"
+      - key: TWILIO_ACCOUNT_SID
+        fromSecret: twilio-account-sid
+      - key: TWILIO_AUTH_TOKEN
+        fromSecret: twilio-auth-token
+      - key: TWILIO_WHATSAPP_FROM
+        value: "whatsapp:+14155238886"
 
 databases:
   - name: kora-db
