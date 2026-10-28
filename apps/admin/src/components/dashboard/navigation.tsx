@@ -66,17 +66,6 @@ export const SECTIONS: NavSection[] = [
       { href: "/admin/users", label: "Users", icon: "\u263A", roles: ["ADMIN"] },
     ],
   },
-  {
-    group: "NeoBank",
-    items: [
-      { href: "/neobank", label: "Dashboard", icon: "\uD83C\uDFE6", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"], app: "neobank" },
-      { href: "/neobank/accounts", label: "Accounts", icon: "\uD83C\uDFE6", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"], app: "neobank" },
-      { href: "/neobank/crypto", label: "Crypto", icon: "\u20BF", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"], app: "neobank" },
-      { href: "/neobank/cards", label: "Cards", icon: "\uD83D\uDC13", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"], app: "neobank" },
-      { href: "/neobank/investments", label: "Investments", icon: "\u2696", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"], app: "neobank" },
-      { href: "/neobank/insurance", label: "Insurance", icon: "\u2661", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"], app: "neobank" },
-    ],
-  },
 ];
 
 /**

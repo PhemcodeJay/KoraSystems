@@ -80,12 +80,6 @@ const SECTIONS: Array<{ group: string; items: NavItem[] }> = [
   {
     group: "NeoBank",
     items: [
-      { href: "/neobank", label: "Dashboard", icon: "🏦", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"] },
-      { href: "/neobank/accounts", label: "Accounts", icon: "🏦", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"] },
-      { href: "/neobank/crypto", label: "Crypto", icon: "₿", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"] },
-      { href: "/neobank/cards", label: "Cards", icon: "💳", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"] },
-      { href: "/neobank/investments", label: "Investments", icon: "📈", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"] },
-      { href: "/neobank/insurance", label: "Insurance", icon: "🛡️", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"] },
       { href: "/plans", label: "Plans", icon: "⭐", roles: ["CUSTOMER", "SUPPLIER", "SME", "ADMIN"] },
     ],
   },

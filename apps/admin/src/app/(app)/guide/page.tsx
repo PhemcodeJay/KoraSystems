@@ -159,7 +159,7 @@ export default async function GuidePage() {
           </button>
         </form>
         <p className="mt-2 text-xs text-ink-400">
-          You'll receive a WhatsApp message with direct links to all platform features.
+          You&apos;ll receive a WhatsApp message with direct links to all platform features.
         </p>
       </div>
 
