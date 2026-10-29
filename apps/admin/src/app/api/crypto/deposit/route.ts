@@ -96,5 +96,95 @@ export async function POST(req: Request) {
   const auth = await withAuth("SME", "ADMIN", "SUPPLIER", "CUSTOMER");
   if (auth.response) return auth.response;
 
-  return NextResponse.json({ error: "Crypto deposits are disabled." }, { status: 403 });
+  const SIMULATED = process.env.CRYPTO_DEPOSITS_SIMULATED === "true";
+
+  let body: { symbol?: string; amount?: string; txHash?: string } | null = null;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  const symbol = body?.symbol;
+  const amount = body?.amount;
+  const txHash = (body?.txHash ?? "").trim();
+
+  if (!symbol || !amount || parseFloat(amount) <= 0) {
+    return NextResponse.json({ error: "Invalid symbol or amount" }, { status: 400 });
+  }
+
+  const asset = String(symbol).toUpperCase();
+  const gross = parseFloat(amount);
+  const chain = chainForAsset(asset);
+
+  // Fail closed: real on-chain verification is not configured in this environment.
+  if (!SIMULATED) {
+    if (!txHash || txHash.length < 10) {
+      return NextResponse.json(
+        { error: "Transaction hash required for on-chain verification" },
+        { status: 400 },
+      );
+    }
+    return NextResponse.json(
+      { error: "Crypto deposits require on-chain verification, which is not configured." },
+      { status: 403 },
+    );
+  }
+
+  // Simulated/demo path.
+  const user = await prisma.user.findUnique({ where: { id: auth.user.id } });
+  const plan = getPlan((user as any)?.plan);
+
+  const fee = calculateFee(gross, plan.cryptoFeePercent);
+  const net = +(gross - fee).toFixed(8);
+
+  const providedHash = txHash || `simulated_${Date.now()}`;
+
+  const existing = await prisma.cryptoDeposit.findUnique({ where: { txHash: providedHash } });
+  if (existing) {
+    return NextResponse.json({ error: "Transaction already processed" }, { status: 409 });
+  }
+
+  const deposit = await prisma.cryptoDeposit.create({
+    data: {
+      userId: auth.user.id,
+      symbol: asset,
+      amount: gross.toFixed(8),
+      txHash: providedHash,
+      chain,
+      status: "CREDITED",
+      verifiedAt: new Date(),
+      creditedAt: new Date(),
+      reason: "simulated",
+    },
+  });
+
+  const existingWallet = await prisma.cryptoWallet.findFirst({
+    where: { userId: auth.user.id, symbol: asset },
+  });
+
+  let wallet;
+  if (existingWallet) {
+    const newBal = (parseFloat(existingWallet.balance.toString()) + net).toFixed(8);
+    wallet = await prisma.cryptoWallet.update({
+      where: { id: existingWallet.id },
+      data: { balance: newBal },
+    });
+  } else {
+    wallet = await prisma.cryptoWallet.create({
+      data: { userId: auth.user.id, symbol: asset, balance: net.toFixed(8) },
+    });
+  }
+
+  return NextResponse.json({
+    success: true,
+    wallet,
+    txHash: deposit.txHash,
+    gross: gross.toFixed(8),
+    fee: fee.toFixed(8),
+    feePercent: plan.cryptoFeePercent,
+    net: net.toFixed(8),
+    feeWallet: FEE_WALLETS[chain],
+    depositWallet: DEPOSIT_WALLETS[chain],
+  });
 }

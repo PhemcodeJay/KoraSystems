@@ -267,6 +267,7 @@ model User {
   insurancePolicies  InsurancePolicy[]
   // Neobank crypto balances — one row per asset held.
   cryptoWallets      CryptoWallet[]
+  cryptoDeposits     CryptoDeposit[]
 
   @@index([role])
   @@map("users")
@@ -1160,6 +1161,26 @@ model CryptoWallet {
   @@unique([userId, symbol])
   @@index([userId])
   @@map("crypto_wallets")
+  @@schema("kora")
+}
+model CryptoDeposit {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol     String
+  amount     Decimal  @db.Decimal(18, 8)
+  txHash     String   @unique @map("tx_hash")
+  chain      String
+  status     String   @default("PENDING") // PENDING | VERIFIED | CREDITED | REJECTED
+  verifiedAt DateTime? @map("verified_at")
+  creditedAt DateTime? @map("credited_at")
+  reason     String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("crypto_deposits")
   @@schema("kora")
 }
 
