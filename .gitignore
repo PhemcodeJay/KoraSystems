@@ -46,3 +46,4 @@ build.err.txt
 .vercel
 *.tsbuildinfo
 coverage/
+apps/admin/src/app/api/auth/login/Untitled-1.txt

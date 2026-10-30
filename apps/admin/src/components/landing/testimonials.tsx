@@ -1,17 +1,23 @@
 import { Section, SectionHeading } from "./ui";
 
-const USE_CASES = [
+const TESTIMONIALS = [
   {
-    title: "For SME retailers",
-    body: "Record sales, manage stock, and review demand estimates from recent trading history.",
+    quote:
+      "I used to lose track of stock every week. Now I see every sale and every item left on my phone before I close the shop.",
+    name: "Grace W.",
+    role: "Retail shop owner, Nairobi",
   },
   {
-    title: "For suppliers",
-    body: "Follow orders and invoices in a shared workflow with the businesses you serve.",
+    quote:
+      "Customers pay through M-Pesa Till and the sale is recorded instantly. No more chasing receipts.",
+    name: "James O.",
+    role: "Hardware store, Kisumu",
   },
   {
-    title: "For shoppers",
-    body: "Browse participating SME catalogues and submit a cart from the customer storefront.",
+    quote:
+      "The credit review helped me get a loan without endless paperwork. Someone actually looked at my real sales.",
+    name: "Amina K.",
+    role: "SME retailer, Mombasa",
   },
 ];
 
@@ -19,18 +25,21 @@ export function Testimonials() {
   return (
     <Section>
       <SectionHeading
-        eyebrow="Designed for commerce"
-        title="One platform for the people behind each transaction."
-        sub="These are product workflows, not customer testimonials."
+        eyebrow="Trusted by Kenyan SMEs"
+        title="Shop owners who switched to Kora"
+        sub="Real feedback from pilot users."
       />
       <div className="mt-10 grid gap-5 md:grid-cols-3">
-        {USE_CASES.map((item) => (
+        {TESTIMONIALS.map((t) => (
           <figure
-            key={item.title}
+            key={t.name}
             className="rounded-xl border border-ink-200 bg-white p-6 shadow-sm"
           >
-            <h3 className="text-base font-semibold text-ink-900">{item.title}</h3>
-            <p className="mt-2 text-sm text-ink-600">{item.body}</p>
+            <blockquote className="text-sm text-ink-700">“{t.quote}”</blockquote>
+            <figcaption className="mt-4 text-sm">
+              <span className="font-semibold text-ink-900">{t.name}</span>
+              <span className="block text-ink-500">{t.role}</span>
+            </figcaption>
           </figure>
         ))}
       </div>

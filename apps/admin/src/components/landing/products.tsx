@@ -61,8 +61,8 @@ export function Products({ signedIn }: { signedIn: boolean }) {
     <Section id="products">
       <SectionHeading
         eyebrow="Products"
-        title="Three products. One platform."
-        sub="Each product closes a gap — SwiftPOS sells, SalesPilot shows, Neobank moves the money — on one account, one ledger and one sign-in."
+        title="Start with SwiftPOS. The rest is coming next."
+        sub="SwiftPOS records sales and stock today. SalesPilot and Neobank are on the way."
       />
       <div className="mt-10 grid gap-5 md:grid-cols-3">
         {PRODUCTS.map((p) => {

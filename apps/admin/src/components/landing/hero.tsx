@@ -21,12 +21,15 @@ export function Hero({ signedIn }: { signedIn: boolean }) {
         <div>
           <Eyebrow>Sales · Inventory · Payments · Credit</Eyebrow>
           <h1 className="mt-4 text-4xl font-extrabold leading-[1.08] tracking-tight text-ink-900 sm:text-5xl">
-            The Operating System for{" "}
-            <span className="text-brand-600">African Business</span>
+            Track every sale and every shilling of stock{" "}
+            <span className="text-brand-600">from your phone.</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg text-ink-600">
-            KoraSystems connects SMEs, suppliers, and customers in one platform.
-            Sales, inventory, payment tracking and credit review in one place.
+            Know your daily sales and stock, and stop losing money to missing stock.
+            Start with SwiftPOS — SalesPilot, Neobank and the rest are coming next.
+          </p>
+          <p className="mt-3 text-sm font-medium text-brand-700">
+            30 days free. We set up your products for you. From KES 1,500/month after.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -39,17 +42,19 @@ export function Hero({ signedIn }: { signedIn: boolean }) {
               </Link>
             ) : (
               <>
-                <Link
-                  href="/register"
+                <a
+                  href="https://wa.me/254700000000?text=Hi%20Kora%2C%20I%20want%20to%20see%20a%20demo"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
                 >
-                  Start free trial
-                </Link>
+                  Chat on WhatsApp
+                </a>
                 <Link
-                  href="/login"
+                  href="/demo"
                   className="rounded-lg border border-ink-300 bg-white px-5 py-3 text-sm font-semibold text-ink-800 hover:bg-ink-50"
                 >
-                  See demo
+                  See how it works in 2 minutes →
                 </Link>
               </>
             )}
