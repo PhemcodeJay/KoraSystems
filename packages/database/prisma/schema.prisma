@@ -519,6 +519,7 @@ model Product {
   sku               String    @unique
   barcode           String?   @unique
   category          String?
+  productType       String    @default("PRODUCT") @map("product_type")
   price             Decimal   @db.Decimal(14, 2)
   costPrice         Decimal?  @map("cost_price") @db.Decimal(14, 2)
   stockQuantity     Int       @default(0) @map("stock_quantity")

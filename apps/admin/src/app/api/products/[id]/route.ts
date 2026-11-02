@@ -58,6 +58,11 @@ export async function PATCH(request: Request, { params }: Params) {
   if (body.description !== undefined) data.description = String(body.description).trim() || null;
   if (body.category !== undefined) data.category = String(body.category).trim() || null;
 
+  if (body.productType !== undefined || body.type !== undefined) {
+    const pt = body.productType ?? body.type;
+    data.productType = String(pt).trim().toUpperCase() || "PRODUCT";
+  }
+
   if (body.price !== undefined) {
     const price = Number(body.price);
     if (!Number.isFinite(price) || price < 0) {

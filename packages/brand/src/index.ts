@@ -34,7 +34,7 @@ export const BRAND = {
   domain: "kora.co.ke",
   /** Subdomain used for demo/staging environments. */
   demoDomain: "demo.kora.co.ke",
-  supportEmail: "support@kora.co.ke",
+  supportEmail: "korasystemsinc@gmail.com",
   country: "Kenya",
   currency: "KES",
   currencySymbol: "KES",

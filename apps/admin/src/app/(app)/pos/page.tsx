@@ -597,6 +597,7 @@ export default function PosPage() {
               <div className="h-32 flex items-end gap-1">
                 {revenueTrend.map((day: SalesInsight, i: number) => {
                   const max = Math.max(
+                    0,
                     ...revenueTrend.map((d: SalesInsight) => d.revenue),
                   );
                   const height = max > 0 ? (day.revenue / max) * 100 : 0;

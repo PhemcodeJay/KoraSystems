@@ -29,7 +29,7 @@ export function isEmail(value: string): boolean {
 function fromAddress(): string {
   return (
     process.env.EMAIL_FROM?.trim() ||
-    "Kora Growth <no-reply@korasystems.com>"
+    "Kora Growth <korasystemsinc@gmail.com>"
   );
 }
 

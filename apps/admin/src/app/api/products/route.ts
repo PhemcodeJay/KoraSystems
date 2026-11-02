@@ -73,6 +73,8 @@ export async function POST(request: Request) {
     price?: unknown;
     stockQuantity?: unknown;
     category?: unknown;
+    productType?: unknown;
+    type?: unknown;
     costPrice?: unknown;
     lowStockThreshold?: unknown;
   } | null;
@@ -160,6 +162,12 @@ export async function POST(request: Request) {
           typeof body?.category === "string" && body.category.trim()
             ? body.category.trim()
             : null,
+        productType:
+          typeof body?.productType === "string" && body.productType.trim()
+            ? body.productType.trim().toUpperCase()
+            : typeof body?.type === "string" && body.type.trim()
+            ? body.type.trim().toUpperCase()
+            : "PRODUCT",
         costPrice: costPrice !== null && Number.isFinite(costPrice) ? costPrice : null,
         lowStockThreshold:
           Number.isInteger(threshold) && threshold >= 0 ? threshold : 10,
