@@ -5,7 +5,7 @@ services:
     plan: free
     rootDir: .
     buildCommand: pnpm install && pnpm build
-    startCommand: pnpm start --filter=admin
+    startCommand: pnpm --filter @kora/admin start
     preDeployCommand: pnpm --filter @kora/database migrate:deploy
     envVars:
       - key: NODE_VERSION
@@ -18,7 +18,11 @@ services:
         fromDatabase:
           name: kora-db
           property: connectionString
+      - key: NODE_ENV
+        value: production
       - key: SESSION_SECRET
+        generateValue: true
+      - key: JWT_SECRET
         generateValue: true
       - key: NEXT_PUBLIC_APP_URL
         sync: false
@@ -37,7 +41,7 @@ services:
       - key: SMTP_PASS
         fromSecret: gmail-app-password
       - key: EMAIL_FROM
-        value: "Kora Growth <no-reply@korasystems.com>"
+        value: "Kora Growth <korasystemsinc@gmail.com>"
       - key: TWILIO_ACCOUNT_SID
         fromSecret: twilio-account-sid
       - key: TWILIO_AUTH_TOKEN
