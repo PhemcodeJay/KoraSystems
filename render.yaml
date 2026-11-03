@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     rootDir: .
-    buildCommand: pnpm install && pnpm build
+    buildCommand: pnpm install --prod=false && pnpm build
     startCommand: pnpm --filter @kora/admin start
     preDeployCommand: pnpm --filter @kora/database migrate:deploy
     envVars:
@@ -47,7 +47,7 @@ services:
       - key: TWILIO_AUTH_TOKEN
         fromSecret: twilio-auth-token
       - key: TWILIO_WHATSAPP_FROM
-        value: "whatsapp:+14155238886"
+        value: "whatsapp:+254101674289"
 
 databases:
   - name: kora-db
