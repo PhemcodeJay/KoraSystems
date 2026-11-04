@@ -47,3 +47,5 @@ build.err.txt
 *.tsbuildinfo
 coverage/
 apps/admin/src/app/api/auth/login/Untitled-1.txt
+investor-deck.html
+investor-deck.pdf
