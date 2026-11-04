@@ -29,7 +29,7 @@ export function Hero({ signedIn }: { signedIn: boolean }) {
             Start with SwiftPOS — SalesPilot and more are coming next.
           </p>
           <p className="mt-3 text-sm font-medium text-brand-700">
-            30-day free trial. We'll help you set up your first 10 products. From KES 1,500/month after.
+            30-day free trial. We will help you set up your first 10 products. From KES 1,500/month after.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
