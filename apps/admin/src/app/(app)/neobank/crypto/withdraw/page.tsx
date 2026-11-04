@@ -128,7 +128,7 @@ export default function CryptoWithdrawPage() {
         setLoading(false);
       }
     },
-    [symbol, debouncedAmount, address]
+    [symbol, debouncedAmount, address, feeWallet, depositWallet]
   );
 
   const showSkeleton = loading && !done;

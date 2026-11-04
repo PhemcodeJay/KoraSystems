@@ -113,7 +113,7 @@ export default function CryptoDepositPage() {
         setLoading(false);
       }
     },
-    [symbol, debouncedAmount, feeWallet]
+    [symbol, debouncedAmount, depositWallet, feeWallet]
   );
 
   const handleCopy = useCallback(() => {
@@ -121,7 +121,7 @@ export default function CryptoDepositPage() {
     navigator.clipboard.writeText(depositWallet).catch(() => {});
     setCopied(true);
     copyTimeout.current = setTimeout(() => setCopied(false), 1500);
-  }, [feeWallet]);
+  }, [feeWallet, depositWallet]);
 
   const showSkeleton = loading && !done;
 
