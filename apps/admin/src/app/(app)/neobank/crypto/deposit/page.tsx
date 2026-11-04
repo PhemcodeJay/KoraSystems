@@ -114,15 +114,8 @@ export default function CryptoDepositPage() {
       }
     },
     [depositWallet, symbol]
-  );n.");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [symbol, debouncedAmount, depositWallet, feeWallet]
-  );
-
-  const handleCopy = useCallback(() => {
+  });
+const handleCopy = useCallback(() => {
     if (copyTimeout.current) clearTimeout(copyTimeout.current);
     navigator.clipboard.writeText(depositWallet).catch(() => {});
     setCopied(true);
