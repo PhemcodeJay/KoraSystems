@@ -113,6 +113,12 @@ export default function CryptoDepositPage() {
         setLoading(false);
       }
     },
+    [depositWallet, symbol]
+  );n.");
+      } finally {
+        setLoading(false);
+      }
+    },
     [symbol, debouncedAmount, depositWallet, feeWallet]
   );
 
