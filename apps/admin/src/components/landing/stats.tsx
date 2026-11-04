@@ -8,10 +8,10 @@ import { Container } from "./ui";
  * dashboard endpoint exists this should read from it rather than hard-code.
  */
 const STATS = [
-  { value: "Built for M-Pesa", label: "Native M-Pesa integration" },
+  { value: "Works with M-Pesa", label: "M-Pesa integration" },
   { value: "Free to start", label: "No upfront cost" },
   { value: "4 roles", label: "One platform" },
-  { value: "3 products", label: "SalesPilot, SwiftPOS, Neobank" },
+  { value: "2 products", label: "SalesPilot, SwiftPOS" },
 ];
 
 export function Stats() {

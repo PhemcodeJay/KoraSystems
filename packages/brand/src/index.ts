@@ -84,7 +84,7 @@ export const APPS = {
   swiftpos: {
     key: "swiftpos",
     name: "SwiftPOS",
-    description: "Fast offline point of sale that syncs when you reconnect.",
+    description: "Browser-based POS that works on any device.",
     path: "/",
   },
   salespilot: {
@@ -103,7 +103,7 @@ export const APPS = {
   pos: {
     key: "pos",
     name: "SwiftPOS",
-    description: "Fast offline point of sale that syncs when you reconnect.",
+    description: "Browser-based POS that works on any device.",
     path: "/",
   },
   mobile: {

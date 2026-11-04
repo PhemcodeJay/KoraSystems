@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Container, Eyebrow } from "./ui";
-import { KoraLogo, APPS } from "@kora/brand";
+import { KoraLogo } from "@kora/brand";
 
 /**
  * Hero band.
@@ -19,17 +19,17 @@ export function Hero({ signedIn }: { signedIn: boolean }) {
 
       <Container className="relative grid items-center gap-12 py-16 lg:grid-cols-2 lg:py-24">
         <div>
-          <Eyebrow>Sales · Inventory · Payments · Credit</Eyebrow>
+          <Eyebrow>Sales · Inventory · Payments</Eyebrow>
           <h1 className="mt-4 text-4xl font-extrabold leading-[1.08] tracking-tight text-ink-900 sm:text-5xl">
             Track every sale and every shilling of stock{" "}
             <span className="text-brand-600">from your phone.</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg text-ink-600">
             Know your daily sales and stock, and stop losing money to missing stock.
-            Start with SwiftPOS — SalesPilot, Neobank and the rest are coming next.
+            Start with SwiftPOS — SalesPilot and more are coming next.
           </p>
           <p className="mt-3 text-sm font-medium text-brand-700">
-            30 days free. We set up your products for you. From KES 1,500/month after.
+            30-day free trial. We'll help you set up your first 10 products. From KES 1,500/month after.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -61,11 +61,11 @@ export function Hero({ signedIn }: { signedIn: boolean }) {
           </div>
 
           <p className="mt-4 text-sm text-ink-500">
-            90-day free trial · No card required · Built for M-Pesa
+            30-day free trial · No card required · Built for M-Pesa
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-500">
-            {[APPS.swiftpos.name, APPS.salespilot.name, APPS.neobank.name].map((name) => (
+            {[APPS.swiftpos.name, APPS.salespilot.name].map((name) => (
               <span key={name} className="inline-flex items-center gap-2">
                 <KoraLogo size={20} rounded={5} />
                 {name}

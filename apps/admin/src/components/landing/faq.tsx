@@ -15,7 +15,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "How does M-Pesa integration work?",
-    a: "STK collection can be enabled with Daraja credentials. C2B callback events are captured for reconciliation; loan disbursement remains simulated until a licensed partner is configured.",
+    a: "Works with M-Pesa. We help you set it up.",
   },
   {
     q: "How is my credit score calculated?",
@@ -23,7 +23,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "What does it cost?",
-    a: "Start free on SalesPilot. Growth adds SwiftPOS from KES 2,500/month, and Enterprise adds Neobank from KES 7,500/month. Every paid plan starts with a 90-day free trial.",
+    a: "Start free on SalesPilot. Growth adds SwiftPOS from KES 2,500/month. Every paid plan starts with a 30-day free trial.",
   },
   {
     q: "Is my data safe?",

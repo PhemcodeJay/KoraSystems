@@ -17,8 +17,7 @@ export function FinalCta({ signedIn }: { signedIn: boolean }) {
             Ready to grow your business?
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-brand-50">
-            Join thousands of African businesses running on KoraSystems. 90-day
-            free trial, no card required.
+            Be one of our first 10 founding businesses. Free setup + 50% off for 3 months.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link

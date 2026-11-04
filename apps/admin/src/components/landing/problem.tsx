@@ -43,7 +43,7 @@ const PAINS: Pain[] = [
     emoji: "💸",
     title: "Enterprise platforms built for someone else",
     body:
-      "ATG, ATG Connect and Africa Trade Exchange are built for governments and enterprises — they solve trade finance, not the shop floor. Their tools assume a desk, a network and a finance team. They never run your till.",
+      "Enterprise platforms are built for governments and big companies. They don't run a shop. Their tools assume a desk, a network and a finance team. They never run your till.",
     cost: "You pay for tools sized for a head office — or fall back to paper the moment data runs out.",
   },
 ];
@@ -54,7 +54,7 @@ export function Problem() {
       <SectionHeading
         eyebrow="The problem"
         title="The platforms built for enterprise don't serve the shop."
-        sub="Africa's shops create real value every day — but the tools around them weren't built for them. ATG, ATG Connect and Africa Trade Exchange are built for governments and enterprises — they don't run a shop. Four gaps hold almost every owner back."
+        sub="Africa's shops create real value every day — but the tools around them weren't built for them. Enterprise platforms are built for governments and big companies. Four gaps hold almost every owner back."
       />
       <ul className="mx-auto mt-8 grid max-w-5xl gap-4 sm:grid-cols-2">
         {PAINS.map((p) => (
