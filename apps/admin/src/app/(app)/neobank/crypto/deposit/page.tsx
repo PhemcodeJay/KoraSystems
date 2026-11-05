@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -114,8 +114,9 @@ export default function CryptoDepositPage() {
       }
     },
     [depositWallet, symbol]
-  });
-const handleCopy = useCallback(() => {
+  );
+
+  const handleCopy = useCallback(() => {
     if (copyTimeout.current) clearTimeout(copyTimeout.current);
     navigator.clipboard.writeText(depositWallet).catch(() => {});
     setCopied(true);
@@ -239,39 +240,42 @@ const handleCopy = useCallback(() => {
         </p>
       </div>
 
+
       {done && (
         <Card
           title="Deposit queued"
-          hint={`Tx: ${done.txHash}`}
+          hint={done.txHash ? `Tx: ${done.txHash}` : undefined}
           className="border-green-200 bg-green-50 text-ink-900"
         >
-          <dl className="grid grid-cols-2 gap-2 text-sm mt-2">
-            <dt className="text-ink-500">Gross</dt>
-            <dd className="text-ink-900">{done.gross} {done.symbol}</dd>
-            <dt className="text-ink-500">Fee</dt>
-            <dd className="text-ink-900">{done.fee} {done.symbol}</dd>
-            <dt className="text-ink-500">Net credited</dt>
-            <dd className="text-ink-900 font-semibold">{done.net} {done.symbol}</dd>
-            <dt className="text-ink-500">Send to</dt>
-            <dd className="col-span-2 text-ink-900 font-mono text-xs break-all">
-              {done.address}
-            </dd>
-          </dl>
-          <p className="mt-3 text-xs text-ink-500">
-            Your deposit is being processed. Refresh the crypto page to see the
-            updated balance.
-          </p>
-          <button
-            onClick={() => router.push("/neobank/crypto")}
-            className="mt-4 inline rounded-md border border-brand-600 px-3 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50"
-          >
-            Back to wallets
-          </button>
+          <>
+            <dl className="grid grid-cols-2 gap-2 text-sm mt-2">
+              <dt className="text-ink-500">Gross</dt>
+              <dd className="text-ink-900">{done.gross} {done.symbol}</dd>
+              <dt className="text-ink-500">Fee</dt>
+              <dd className="text-ink-900">{done.fee} {done.symbol}</dd>
+              <dt className="text-ink-500">Net credited</dt>
+              <dd className="text-ink-900 font-semibold">{done.net} {done.symbol}</dd>
+              <dt className="text-ink-500">Send to</dt>
+              <dd className="col-span-2 text-ink-900 font-mono text-xs break-all">
+                {done.address}
+              </dd>
+            </dl>
+            <p className="mt-3 text-xs text-ink-500">
+              Your deposit is being processed. Refresh the crypto page to see the
+              updated balance.
+            </p>
+            <button
+              onClick={() => router.push("/neobank/crypto")}
+              className="mt-4 inline rounded-md border border-brand-600 px-3 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50"
+            >
+              Back to wallets
+            </button>
+          </>
         </Card>
       )}
 
       {/* Skeleton placeholders so the layout doesn't jump while loading. */}
-      {loading && !done && (
+      {showSkeleton && (
         <div className="space-y-4">
           <SkeletonLine width="40%" />
           <SkeletonLine width="70%" />
