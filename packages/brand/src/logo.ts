@@ -7,7 +7,7 @@ import { COLOR } from "./tokens";
  * without duplicating the artwork.
  */
 export const KORA_MARK_PATH =
-  "M21 17h6.5v13.2L40 17h7.8L33.4 30.2 48.6 47h-8.2L27.5 33.4V47H21z";
+  "M21 15 C21 15.33 21 15.66 21 16 C23.31 16 25.62 16 28 16 C28 15.67 28 15.34 28 15 C25.69 15 23.38 15 21 15 Z";
 
 /**
  * Mark colourways. Green is the default because it is the primary brand
@@ -16,7 +16,7 @@ export const KORA_MARK_PATH =
  */
 export const KORA_MARK_VARIANTS = {
   green: COLOR.primary[500],
-  gold: COLOR.accent[500],
+  gold: "#B37A05",
   blue: COLOR.blue[800],
 } as const;
 
