@@ -17,18 +17,18 @@
   --kora-primary-900: #064e3b;
   --kora-primary-950: #022c22;
 
-  /* Brand — gold (#f59e0b) */
+  /* Brand — gold. #B37A05 at 500. Also the accent/action colour. */
   --kora-accent-50: #fffbeb;
   --kora-accent-100: #fef3c7;
   --kora-accent-200: #fde68a;
   --kora-accent-300: #fcd34d;
   --kora-accent-400: #fbbf24;
-  --kora-accent-500: #f59e0b;
+  --kora-accent-500: #B37A05;
   --kora-accent-600: #d97706;
   --kora-accent-700: #b45309;
   --kora-accent-800: #92400e;
   --kora-accent-900: #78350f;
-  --kora-accent-950: #451a03;
+  --kora-accent-950: #451a03;,
 
   /* Brand — blue (#1e40af) */
   --kora-blue-50: #eff6ff;
