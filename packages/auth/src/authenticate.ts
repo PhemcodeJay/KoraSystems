@@ -315,14 +315,8 @@ export async function listDemoAccounts(): Promise<DemoAccount[]> {
   // production login page, so it goes away with the rest of demo mode.
   if (!demoLoginEnabled()) return [];
 
-  const [smes, suppliers, customers] = await Promise.all([
-    prisma.sME.findMany({
-      include: {
-        _count: { select: { products: true, sales: true, loans: true } },
-        user: { select: { email: true, fullName: true, role: true } },
-      },
-      orderBy: { businessName: "asc" },
-    }),
+  // Only include supplier and customer accounts - excluding SME and admin
+  const [suppliers, customers] = await Promise.all([
     prisma.supplier.findMany({
       include: {
         _count: { select: { products: true, orders: true } },
@@ -340,20 +334,6 @@ export async function listDemoAccounts(): Promise<DemoAccount[]> {
   ]);
 
   const accounts: DemoAccount[] = [];
-
-  for (const s of smes) {
-    accounts.push({
-      email: s.user.email,
-      fullName: s.user.fullName,
-      role: s.user.role,
-      organisation: s.businessName,
-      stats: [
-        { label: "Products", value: String(s._count.products) },
-        { label: "Sales", value: String(s._count.sales) },
-        { label: "Loans", value: String(s._count.loans) },
-      ],
-    });
-  }
 
   for (const s of suppliers) {
     accounts.push({
