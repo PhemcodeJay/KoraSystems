@@ -76,8 +76,6 @@ the committed `.env` uses `5000`), so with the demo environment it is available
 at `http://localhost:5000`. To use the demo dataset, sign in with one of the
 accounts below; the demo password is `Demo@1234`:
 
-- `admin@demo.kora.co.ke`
-- `sme1@demo.kora.co.ke`
 - `supplier1@demo.kora.co.ke`
 - `customer1@demo.kora.co.ke`
 

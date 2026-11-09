@@ -88,7 +88,7 @@ export async function authenticate(
   //    attacker enumerate which accounts have real passwords set. Two
   //    sequential checks keep the timing identical either way.
   const demoPassword = demoLoginEnabled() ? process.env.KORA_DEMO_PASSWORD : undefined;
-  const demoMatches = !!demoPassword && password === demoPassword;
+  const demoMatches = !!demoPassword && password === demoPassword && user.role !== "ADMIN";
 
   if (!hashMatches && !demoMatches) {
     // Log demo login attempts in production for security auditing.
