@@ -132,7 +132,7 @@ export const ROLE_LABELS = {
   SME: "Business owner",
   SUPPLIER: "Supplier",
   CUSTOMER: "Customer",
-  ADMIN: "Platform admin",
+  ADMIN: "",
 } as const;
 
 // --- Verification -------------------------------------------------------
