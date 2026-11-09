@@ -2,6 +2,7 @@ node_modules/
 .pnpm-store/
 # alternate content store (this repo's install currently uses this one)
 .pnpm-store-fresh/
+.vscode/
 
 # next
 .next/
