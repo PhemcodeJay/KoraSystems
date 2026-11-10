@@ -438,68 +438,64 @@ export default function CryptoDepositPage() {
           <SkeletonLine width="70%" />
           <Skeleton className="h-48" />
         </div>
-<section className="py-16 bg-gray-50">
-    <div className="container mx-auto px-4">
-      <div className="max-w-md mx-auto">
-        <form className="space-y-4">
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              placeholder="Your name"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              placeholder="your@email.com"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Message
-            </label>
-            <textarea
-              name="message"
-              rows="3"
-              placeholder="Your message here"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-            /></textarea>
-          </div>
-          <div className="flex space-x-3">
-            <button
-              type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-28 transition-colors"
-            >
-              Send Message
-            </button>
-            <a
-              href="https://wa.me/254700000000?text=I%20am%20interested%20in%20Kora%20Systems"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-green-300 hover:bg-green-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-28 transition-colors"
-            >
-              WhatsApp
-            </a>
-          </div>
-        </form>
-      </div>
-    </div>
-  </section>
-
       )}
-    </div>
-  );
-<div className="flex space-x-4 mt-6">
+
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-md mx-auto">
+            <form className="space-y-4">
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Your name"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="your@email.com"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Message
+                </label>
+                <textarea
+                  name="message"
+                  rows={3}
+                  placeholder="Your message here"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                ></textarea>
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  type="submit"
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-28 transition-colors"
+                >
+                  Send Message
+                </button>
+                <a
+                  href="https://wa.me/254700000000?text=I%20am%20interested%20in%20Kora%20Systems"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-green-300 hover:bg-green-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-28 transition-colors"
+                >
+                  WhatsApp
+                </a>
+              </div>
+            </form>
+
+            <div className="flex space-x-4 mt-6">
               <a
                 href="https://www.linkedin.com/sharing/share-offsite?url=https://kora.co.ke"
                 target="_blank"
@@ -517,6 +513,11 @@ export default function CryptoDepositPage() {
                 Twitter
               </a>
             </div>
-
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }
+
 

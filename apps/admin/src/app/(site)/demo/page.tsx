@@ -2,7 +2,7 @@ import { BRAND } from "@kora/brand";
 import { SiteHeader } from "@/components/landing/site-header";
 import { Container } from "@/components/landing/ui";
 import Link from "next/link";
-import { useAir } from "@/lib/air";
+import { useAuth } from "@/features/auth/use-auth";
 
 export const metadata = {
   title: `Demo — ${BRAND.displayName}`,
