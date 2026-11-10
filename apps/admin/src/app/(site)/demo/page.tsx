@@ -63,7 +63,7 @@ export default function DemoPage() {
               <div className="mt-8">
                 <a
                   href="/admin"
-                  rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-700
+                  className="rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
                 >
                   Go to Admin Dashboard
                 </a>
@@ -105,7 +105,7 @@ export default function DemoPage() {
               Book a 15-minute walkthrough
             </a>
             <a
-              href="https://wa.me/254700000000?text=Hi%20Kora%2C%20I%20want%20a%20demo"
+              href="https://wa.me/254101674289?text=Hi%20Kora%2C%20I%20want%20a%20demo"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-lg border border-ink-300 bg-white px-5 py-3 text-sm font-semibold text-ink-800 hover:bg-ink-50"
