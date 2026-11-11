@@ -1,10 +1,32 @@
 ﻿"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import clsx from "clsx";
-import { Skeleton, SkeletonLine, LoadingSpinner } from "@/components/skeleton";
 import { cachedFetch, clearCache } from "@/lib/ui";
+
+declare module "clsx" {
+  const clsx: (...classes: Array<string | false | null | undefined>) => string;
+  export default clsx;
+}
+
+import clsx from "clsx";
+
+function Skeleton({ className }: { className?: string }) {
+  return <div aria-hidden="true" className={clsx("animate-pulse rounded bg-ink-100", className)} />;
+}
+
+function SkeletonLine({ width }: { width: string }) {
+  return <div aria-hidden="true" className="h-3 animate-pulse rounded bg-ink-100" style={{ width }} />;
+}
+
+function LoadingSpinner({ size, className }: { size: number; className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={clsx("inline-block animate-spin rounded-full border-2 border-current border-r-transparent", className)}
+      style={{ width: size, height: size }}
+    />
+  );
+}
 
 type CardProps = React.PropsWithChildren<{
   className?: string;
@@ -26,14 +48,6 @@ function Card({ children, className, title, hint }: CardProps) {
   );
 }
 
-const CRYPTO_PRICES: Record<string, number> = {
-  BTC: 68500,
-  ETH: 3500,
-  SOL: 150,
-  USDT: 1.0,
-  USDC: 1.0,
-};
-
 const CHAIN_LABELS: Record<string, string> = {
   USDT: "TRC20 (TRON)",
   USDC: "TRC20 (TRON)",
@@ -46,35 +60,14 @@ const chainForAsset = (asset: string): "tron" | "solana" =>
   asset === "USDT" || asset === "USDC" ? "tron" : "solana";
 
 const FEE_WALLETS: Record<string, string> = {
-  tron: process.env.NEXT_PUBLIC_TRON_FEE_WALLET ?? "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE",
-  solana: process.env.NEXT_PUBLIC_SOLANA_FEE_WALLET ?? "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
+  tron: process.env.NEXT_PUBLIC_TRON_FEE_WALLET ?? "",
+  solana: process.env.NEXT_PUBLIC_SOLANA_FEE_WALLET ?? "",
 };
+
 const DEPOSIT_WALLETS: Record<string, string> = {
   tron: process.env.NEXT_PUBLIC_TRON_DEPOSIT_WALLET ?? "",
   solana: process.env.NEXT_PUBLIC_SOLANA_DEPOSIT_WALLET ?? "",
 };
-}
-<section className="py-24 bg-white">
-    <div className="container mx-auto px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-gray-50 rounded-lg p-4 h-full border">
-            <img src="/placeholder-screenshot-1.jpg" alt="Product Screenshot 1" className="w-full h-48 object-cover rounded-md" />
-            <p className="mt-2 text-sm text-gray-600">Feature Overview</p>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-4 h-full border">
-            <img src="/placeholder-screenshot-2.jpg" alt="Product Screenshot 2" className="w-full h-48 object-cover rounded-md" />
-            <p className="mt-2 text-sm text-gray-600">User Dashboard</p>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-4 h-full border">
-            <img src="/placeholder-screenshot-3.jpg" alt="Product Screenshot 3" className="w-full h-48 object-cover rounded-md" />
-            <p className="mt-2 text-sm text-gray-600">Transaction Flow</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-;
 
 type DepositResult = {
   txHash: string;
@@ -99,7 +92,6 @@ function useDebounceValue(value: string, ms: number): string {
 }
 
 export default function CryptoDepositPage() {
-  const router = useRouter();
   const [symbol, setSymbol] = useState("USDT");
   const [amount, setAmount] = useState("");
   const debouncedAmount = useDebounceValue(amount, 150);
@@ -154,13 +146,7 @@ export default function CryptoDepositPage() {
         setLoading(false);
       }
     },
-    [depositWallet, symbol]
-  );n.");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [symbol, debouncedAmount, depositWallet, feeWallet]
+    [depositWallet, symbol, debouncedAmount]
   );
 
   const handleCopy = useCallback(() => {
@@ -168,9 +154,7 @@ export default function CryptoDepositPage() {
     navigator.clipboard.writeText(depositWallet).catch(() => {});
     setCopied(true);
     copyTimeout.current = setTimeout(() => setCopied(false), 1500);
-  }, [feeWallet, depositWallet]);
-
-  const showSkeleton = loading && !done;
+  }, [depositWallet]);
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -268,6 +252,7 @@ export default function CryptoDepositPage() {
             className="flex-1 rounded-md border border-ink-200 px-3 py-2 text-sm text-ink-900 font-mono bg-ink-50"
           />
           <button
+            type="button"
             onClick={handleCopy}
             disabled={loading}
             className={clsx(
@@ -310,33 +295,12 @@ export default function CryptoDepositPage() {
             updated balance.
           </p>
           <button
-            onClick={() => router.push("/neobank/crypto")}
+            onClick={() => window.location.assign("/neobank/crypto")}
             className="mt-4 inline rounded-md border border-brand-600 px-3 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50"
           >
             Back to wallets
           </button>
         </Card>
-
-<section className="py-16 bg-white">
-    <div className="container mx-auto px-4">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-gray-100 rounded-xl p-8 text-center">
-          <iframe
-            width="560"
-            height="315"
-            src="https://www.loom.com/embed/placeholder-video-id"
-            title="Kora Systems Demo"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="w-full mb-4 rounded-md"
-          />
-          <h3 className="text-xl font-medium text-gray-800 mb-2">See Kora in 2 minutes</h3>
-          <p className="text-gray-500">Watch a quick demo of our platform features</p>
-        </div>
-      </div>
-    </div>
-  </section>
 
       )}
 <section className="py-24 bg-gray-50">
