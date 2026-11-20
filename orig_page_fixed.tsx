@@ -1,10 +1,66 @@
 ﻿"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import clsx from "clsx";
-import { Card } from "@/components/ui";
-import { cachedFetch, clearCache } from "@/lib/ui";
+
+const uiFetchCache = new Map<string, Promise<Response>>();
+
+async function cachedFetch(input: string, init?: RequestInit): Promise<Response> {
+  const method = init?.method?.toUpperCase() ?? "GET";
+
+  if (method !== "GET") {
+    return fetch(input, init);
+  }
+
+  const cached = uiFetchCache.get(input);
+  if (cached) return cached.then((response) => response.clone());
+
+  const pending = fetch(input, init).then((response) => {
+    if (!response.ok) uiFetchCache.delete(input);
+    return response.clone();
+  });
+
+  uiFetchCache.set(input, pending);
+  try {
+    return await pending;
+  } catch (error) {
+    uiFetchCache.delete(input);
+    throw error;
+  }
+}
+
+function clearCache(prefix: string) {
+  for (const key of uiFetchCache.keys()) {
+    if (key.startsWith(prefix)) uiFetchCache.delete(key);
+  }
+}
+
+function clsx(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function Card({
+  title,
+  hint,
+  className = "",
+  children,
+}: {
+  title?: string;
+  hint?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={clsx("rounded-xl border bg-white p-4 shadow-sm", className)}>
+      {(title || hint) && (
+        <div className="mb-2">
+          {title && <h3 className="font-semibold">{title}</h3>}
+          {hint && <p className="break-all text-xs text-ink-500">{hint}</p>}
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
 
 function Skeleton({ className = "" }: { className?: string }) {
   return <div aria-hidden="true" className={`animate-pulse rounded bg-ink-100 ${className}`} />;
@@ -81,7 +137,6 @@ function useDebounceValue(value: string, ms: number): string {
 }
 
 export default function CryptoDepositPage() {
-  const router = useRouter();
   const [symbol, setSymbol] = useState("USDT");
   const [amount, setAmount] = useState("");
   const debouncedAmount = useDebounceValue(amount, 150);
@@ -300,12 +355,12 @@ export default function CryptoDepositPage() {
             <p className="mt-3 text-xs text-ink-500">
               Your deposit is being processed. Refresh the crypto page to see the updated balance.
             </p>
-            <button
-              onClick={() => router.push("/neobank/crypto")}
+            <a
+              href="/neobank/crypto"
               className="mt-4 inline rounded-md border border-brand-600 px-3 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50"
             >
               Back to wallets
-            </button>
+            </a>
           </Card>
         )}
 

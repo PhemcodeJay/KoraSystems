@@ -12,7 +12,7 @@ export const metadata = {
 // Demo page now requires admin authentication
 // Visiting this page without admin access will redirect to localhost:port/admin
 export default function DemoPage() {
-  const { user, isLoading, error } = useAir();
+  const { user, isLoading, error } = useAuth();
 
   if (isLoading) {
     return (
