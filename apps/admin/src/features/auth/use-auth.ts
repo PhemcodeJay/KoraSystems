@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { cookies } from "next/headers";
 import { prisma } from "@kora/database";
@@ -26,8 +28,8 @@ export function useAuth() {
         // Verify the session token
         const SESSION_COOKIE = "kora_session";
 
-        // Import verifySessionToken from auth package
-        const { verifySessionToken } = await import("@kora/auth/src/session");
+        // Import verifySessionToken from the auth package entry point
+        const { verifySessionToken } = await import("@kora/auth");
 
         const payload = verifySessionToken(token);
 
