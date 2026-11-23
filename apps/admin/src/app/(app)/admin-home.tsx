@@ -24,6 +24,8 @@ import { Tabs } from "@/components/dashboard/tabbed";
 
 const ACTIONS = [
   { href: "/admin/smes", label: "Businesses", hint: "Onboarding and accounts", icon: "\u25FB" },
+  { href: "/admin/suppliers", label: "Suppliers", hint: "Manage vendor accounts", icon: "\u26DF" },
+  { href: "/admin/customers", label: "Customers", hint: "Manage shopper accounts", icon: "\u263A" },
   { href: "/admin/loans", label: "Credit desk", hint: "Approve or reject applications", icon: "\u25C8", tone: "brand" as const },
   { href: "/admin/transactions", label: "Ledger", hint: "Every posting, balanced", icon: "\u21C4" },
   { href: "/admin/reports", label: "Reports", hint: "Revenue and insights", icon: "\u2696" },

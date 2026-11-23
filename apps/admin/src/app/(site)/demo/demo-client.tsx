@@ -3,76 +3,13 @@
 import { BRAND } from "@kora/brand";
 import { SiteHeader } from "@/components/landing/site-header";
 import { Container } from "@/components/landing/ui";
+import { DemoVideo } from "@/components/landing/demo-video";
 import Link from "next/link";
-import { useAuth } from "@/features/auth/use-auth";
 
 export function Demo() {
-  const { user, isLoading, error } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-ink-50">
-        <SiteHeader signedIn={false} />
-        <main>
-          <Container className="py-16">
-            <div className="flex items-center justify-center h-64">
-              <p className="text-ink-600">Loading...</p>
-            </div>
-          </Container>
-        </main>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-ink-50">
-        <SiteHeader signedIn={false} />
-        <main>
-          <Container className="py-16">
-            <div className="flex items-center justify-center h-64">
-              <p className="text-ink-600">Error loading session</p>
-            </div>
-          </Container>
-        </main>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-ink-50">
-        <SiteHeader signedIn={false} />
-        <main>
-          <Container className="py-16">
-            <div className="text-center">
-              <h1 className="text-3xl font-extrabold text-ink-900 sm:text-4xl">
-                Admin Access Required
-              </h1>
-              <p className="mt-4 max-w-2xl text-lg text-ink-600">
-                Please visit <a href="/admin" className="text-brand-600 hover:text-brand-700">
-                  localhost:port/admin
-                </a>{" "}
-                to access the admin dashboard.
-              </p>
-              <div className="mt-8">
-                <a
-                  href="/admin"
-                  className="rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
-                >
-                  Go to Admin Dashboard
-                </a>
-              </div>
-            </div>
-          </Container>
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-ink-50">
-      <SiteHeader signedIn={true} />
+      <SiteHeader signedIn={false} />
       <main>
         <Container className="py-16">
           <h1 className="text-3xl font-extrabold text-ink-900 sm:text-4xl">
@@ -83,11 +20,7 @@ export function Demo() {
             your products for you.
           </p>
 
-          <div className="mt-8 aspect-video w-full max-w-3xl overflow-hidden rounded-2xl border border-ink-200 bg-ink-100 shadow-sm">
-            <div className="flex h-full items-center justify-center text-ink-500">
-              Demo video coming soon
-            </div>
-          </div>
+          <DemoVideo className="mt-8 w-full max-w-3xl mx-auto" />
 
           <div className="mt-10 flex flex-wrap gap-3">
             <a

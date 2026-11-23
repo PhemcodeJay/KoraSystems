@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, apiFetch, apiJson, ApiError } from "@/lib/client";
+import { api, apiFetch, readError, ApiError } from "@/lib/client";
 import { Card } from "@/components/ui";
 
 type Step = "business" | "products" | "payments";
@@ -59,18 +59,23 @@ export default function OnboardingPage() {
   const [platformTill, setPlatformTill] = useState("");
 
   useEffect(() => {
-    apiJson<Status>(api.onboardingStatus.path)
-      .then((s) => {
-        setStatus(s);
-        setBusinessName(s.businessName ?? "");
-        setMpesaTill(s.mpesaTill ?? "");
-        setMpesaPaybill(s.mpesaPaybill ?? "");
-        setPlatformPaybill(s.mpesaPaybill ?? "");
-        setPlatformBusinessName(s.mpesaBusinessName ?? "");
-        setPlatformTill(s.mpesaTillNumber ?? "");
-        if (s.onboardingStep === "COMPLETE") setDone(true);
-        else if (s.onboardingStep === "PAYMENTS") setStep("payments");
-        else if (s.onboardingStep === "PRODUCTS") setStep("products");
+    apiFetch(api.onboardingStatus.path)
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`Status check failed (${res.status})`);
+        const payload = await res.json();
+        // The status route returns { data: sme, mpesaPaybill, ... } — read all fields.
+        const sme = payload?.data ?? payload;
+        setStatus(sme as Status);
+        setBusinessName(sme.businessName ?? "");
+        setMpesaTill(sme.mpesaTill ?? "");
+        setMpesaPaybill(sme.mpesaPaybill ?? "");
+        setPlatformPaybill(sme.mpesaPaybill ?? "");
+        setPlatformBusinessName(sme.mpesaBusinessName ?? "");
+        setPlatformTill(sme.mpesaTillNumber ?? "");
+        if (sme.onboardingStep === "COMPLETE") setDone(true);
+        else if (sme.onboardingStep === "BUSINESS_INFO") setStep("business");
+        else if (sme.onboardingStep === "PRODUCTS") setStep("products");
+        else if (sme.onboardingStep === "PAYMENTS") setStep("payments");
       })
       .catch((e) => {
         setError(e instanceof Error ? e.message : "Could not load onboarding status.");
@@ -108,6 +113,11 @@ export default function OnboardingPage() {
             price: parseFloat(price),
             stockQuantity: parseInt(stock, 10),
           },
+        });
+        // Tell the server the products step is done so the wizard advances.
+        await apiFetch(api.onboardingStep.path, {
+          method: "POST",
+          body: { step: "PRODUCTS", data: {} },
         });
         setStep("payments");
       } else {

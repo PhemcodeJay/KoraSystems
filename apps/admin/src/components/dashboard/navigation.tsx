@@ -59,7 +59,10 @@ export const SECTIONS: NavSection[] = [
     group: "Platform",
     items: [
       { href: "/admin/overview", label: "Console", icon: "\u25A6", roles: ["ADMIN"] },
+      { href: "/admin/growth", label: "Growth", icon: "\u25B2", roles: ["ADMIN"] },
       { href: "/admin/smes", label: "Businesses", icon: "\u25FB", roles: ["ADMIN"] },
+      { href: "/admin/suppliers", label: "Suppliers", icon: "\u26DF", roles: ["ADMIN"] },
+      { href: "/admin/customers", label: "Customers", icon: "\u263A", roles: ["ADMIN"] },
       { href: "/admin/loans", label: "Credit desk", icon: "\u25C8", roles: ["ADMIN"] },
       { href: "/admin/transactions", label: "Ledger", icon: "\u21C4", roles: ["ADMIN"] },
       { href: "/admin/reports", label: "Reports", icon: "\u2696", roles: ["ADMIN"] },
