@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const router = useRouter();
   const params = useSearchParams();

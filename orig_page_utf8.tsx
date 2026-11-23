@@ -3,9 +3,32 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { Card } from "@/components/ui";
 import { Skeleton, SkeletonLine, LoadingSpinner } from "@/components/skeleton";
 import { cachedFetch, clearCache } from "@/lib/ui";
+
+function Card({
+  children,
+  className,
+  title,
+  hint,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+  title?: string;
+  hint?: string;
+}) {
+  return (
+    <div className={clsx("rounded-lg border p-4", className)}>
+      {(title || hint) && (
+        <div className="mb-2">
+          {title && <h3 className="font-semibold">{title}</h3>}
+          {hint && <p className="text-xs text-ink-500">{hint}</p>}
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
 
 const CRYPTO_PRICES: Record<string, number> = {
   BTC: 68500,
