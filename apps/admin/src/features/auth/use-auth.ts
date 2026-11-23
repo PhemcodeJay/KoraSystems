@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { cookies } from "next/headers";
-import { prisma } from "@kora/database";
+import { api } from "@/lib/client";
 
 /**
  * Custom hook for authentication state.
  * Provides user session, loading state, and error information.
+ *
+ * The session itself is resolved server-side by `GET /api/auth/me`
+ * (`getSessionUser` in @kora/auth): it reads the signed `kora_session`
+ * cookie, verifies it, and reloads the user from the database. This hook
+ * is a client component, so it cannot import `next/headers` or Prisma
+ * directly — it fetches the session endpoint instead.
  */
 export function useAuth() {
   const [user, setUser] = useState<any>(null);
@@ -14,49 +19,48 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+
     async function fetchSession() {
       try {
-        const cookieStore = cookies();
-        const token = cookieStore.get("kora_session")?.value;
+        const response = await fetch(api.auth.me.path, {
+          credentials: "same-origin",
+          headers: { Accept: "application/json" },
+        });
 
-        if (!token) {
-          setUser(null);
-          setIsLoading(false);
+        // 401 means no session (signed out, expired or cleared cookie) —
+        // not an error, just an unauthenticated user.
+        if (response.status === 401) {
+          if (mounted) {
+            setUser(null);
+            setError(null);
+          }
           return;
         }
 
-        // Verify the session token
-        const SESSION_COOKIE = "kora_session";
+        if (!response.ok) {
+          throw new Error(`Session check failed (${response.status})`);
+        }
 
-        // Import verifySessionToken from the auth package entry point
-        const { verifySessionToken } = await import("@kora/auth");
-
-        const payload = verifySessionToken(token);
-
-        if (payload) {
-          const userData = await prisma.user.findUnique({
-            where: { id: payload.userId },
-            select: {
-              id: true,
-              email: true,
-              fullName: true,
-              role: true,
-            },
-          });
-
-          setUser(userData ?? null);
-        } else {
-          setUser(null);
+        const payload = await response.json();
+        if (mounted) {
+          setUser(payload?.user ?? null);
+          setError(null);
         }
       } catch (err) {
+        if (!mounted) return;
         setError(err instanceof Error ? err.message : "Authentication error");
         setUser(null);
       } finally {
-        setIsLoading(false);
+        if (mounted) setIsLoading(false);
       }
     }
 
     fetchSession();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return { user, isLoading, error };
