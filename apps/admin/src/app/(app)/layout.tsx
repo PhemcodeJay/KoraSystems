@@ -1,6 +1,11 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@kora/auth/guards";
+import type { Metadata } from "next";
 import { AppShell } from "@/components/dashboard/shell";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 /**
  * The single protected layout for the whole platform.

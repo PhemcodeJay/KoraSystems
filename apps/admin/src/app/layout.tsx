@@ -36,8 +36,29 @@ export const metadata: Metadata = {
     description: APPS.admin.description,
     images: ["/opengraph-image"],
   },
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
+  authors: [{ name: BRAND.legalName, url: "/" }],
+  keywords: [
+    "Kora Systems",
+    "SME software Kenya",
+    "point of sale",
+    "inventory management",
+    "M-Pesa payments",
+    "SME credit",
+    "SwiftPOS",
+    "SalesPilot",
+    "Neobank",
+    "African commerce",
+  ],
+  category: "business",
+  publisher: BRAND.legalName,
   formatDetection: { telephone: false },
+  other: {
+    "geo.placename": "Nairobi, Kenya",
+    "geo.position": "-1.2921;36.8219",
+    "geo.country": "KE",
+    "geo.region": "KE-01",
+  },
 };
 
 export const viewport: Viewport = {

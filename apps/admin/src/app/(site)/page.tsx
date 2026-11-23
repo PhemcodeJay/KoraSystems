@@ -1,5 +1,5 @@
 import { getSessionUser } from "@kora/auth/guards";
-import { BRAND } from "@kora/brand";
+import { BRAND, APPS } from "@kora/brand";
 import { SiteHeader } from "@/components/landing/site-header";
 import { Hero } from "@/components/landing/hero";
 import { Problem } from "@/components/landing/problem";
@@ -22,6 +22,32 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: `${BRAND.displayName} — ${BRAND.tagline}`,
   description: BRAND.description,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    title: `${BRAND.displayName} — ${BRAND.tagline}`,
+    description: BRAND.description,
+    siteName: APPS.admin.name,
+    locale: BRAND.locale,
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: `${BRAND.displayName} — ${BRAND.tagline}`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${BRAND.displayName} — ${BRAND.tagline}`,
+    description: BRAND.description,
+    images: ["/opengraph-image"],
+  },
+  robots: { index: true, follow: true },
 };
 
 /**
@@ -40,8 +66,103 @@ export default async function LandingPage() {
   const user = await getSessionUser();
   const signedIn = !!user;
 
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://korasystems.onrender.com";
+
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: BRAND.name,
+    legalName: BRAND.legalName,
+    url: baseUrl,
+    logo: `${baseUrl}/icon.svg`,
+    sameAs: [],
+    contactPoint: {
+      "@type": "ContactPoint",
+      telephone: "+254700000000",
+      contactType: "customer service",
+      availableLanguage: ["en", "sw"],
+      areaServed: "KE",
+    },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Nairobi",
+      addressRegion: "Nairobi County",
+      postalCode: "00100",
+      addressCountry: "KE",
+    },
+    founder: {},
+    foundingDate: {},
+    brand: BRAND.name,
+    slogan: BRAND.tagline,
+  };
+
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: BRAND.name,
+    url: baseUrl,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${baseUrl}/demo?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  const localBusinessJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: BRAND.name,
+    description: BRAND.description,
+    image: `${baseUrl}/opengraph-image`,
+    telephone: "+254700000000",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Nairobi",
+      addressRegion: "Nairobi County",
+      postalCode: "00100",
+      addressCountry: "KE",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: -1.2921,
+      longitude: 36.8219,
+    },
+    areaServed: "KE",
+    currency: "KES",
+    priceRange: "KES 1,500/month",
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      opens: "08:00",
+      closes: "17:00",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    },
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [],
+  };
+
   return (
     <div className="min-h-screen bg-ink-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <SiteHeader signedIn={signedIn} />
       <main>
         <Hero signedIn={signedIn} />

@@ -1,6 +1,11 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@kora/auth/guards";
+import type { Metadata } from "next";
 import { AccountShell } from "@/components/account-shell";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 /**
  * Layout for the per-account view. Accepts any signed-in role — the content

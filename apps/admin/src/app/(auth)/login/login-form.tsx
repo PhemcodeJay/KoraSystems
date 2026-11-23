@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { DemoAccount } from "@kora/auth/authenticate";
 import clsx from "clsx";
@@ -154,12 +153,6 @@ export function LoginForm({
         </div>
       )}
 
-      <p className="mt-4 text-center text-sm text-ink-500">
-        New to Kora?{" "}
-        <Link href="/register" className="font-medium text-brand-700 hover:text-brand-800">
-          Create an account
-        </Link>
-      </p>
     </div>
   );
 }
