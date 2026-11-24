@@ -1,10 +1,18 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import clsx from "clsx";
-import { Skeleton, SkeletonLine, LoadingSpinner } from "@/components/skeleton";
-import { cachedFetch, clearCache } from "@/lib/ui";
+import { useCallback, useRef, useState } from "react";
+
+function clsx(...classes: Array<string | false | null | undefined>): string {
+  return classes.filter(Boolean).join(" ");
+}
+
+async function cachedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  return fetch(input, init);
+}
+
+function clearCache(_key: string): void {
+  // Cache invalidation is handled by the application or the request layer.
+}
 
 function Card({
   children,
@@ -30,14 +38,6 @@ function Card({
   );
 }
 
-const CRYPTO_PRICES: Record<string, number> = {
-  BTC: 68500,
-  ETH: 3500,
-  SOL: 150,
-  USDT: 1.0,
-  USDC: 1.0,
-};
-
 const CHAIN_LABELS: Record<string, string> = {
   USDT: "TRC20 (TRON)",
   USDC: "TRC20 (TRON)",
@@ -49,10 +49,6 @@ const CHAIN_LABELS: Record<string, string> = {
 const chainForAsset = (asset: string): "tron" | "solana" =>
   asset === "USDT" || asset === "USDC" ? "tron" : "solana";
 
-const FEE_WALLETS: Record<string, string> = {
-  tron: process.env.NEXT_PUBLIC_TRON_FEE_WALLET ?? "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE",
-  solana: process.env.NEXT_PUBLIC_SOLANA_FEE_WALLET ?? "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
-};
 const DEPOSIT_WALLETS: Record<string, string> = {
   tron: process.env.NEXT_PUBLIC_TRON_DEPOSIT_WALLET ?? "",
   solana: process.env.NEXT_PUBLIC_SOLANA_DEPOSIT_WALLET ?? "",
@@ -68,30 +64,15 @@ type DepositResult = {
   depositWallet: string;
 };
 
-/**
- * Debounce helper — keeps input changes from re-rendering on every keystroke.
- */
-function useDebounceValue(value: string, ms: number): string {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), ms);
-    return () => clearTimeout(t);
-  }, [value, ms]);
-  return debounced;
-}
-
 export default function CryptoDepositPage() {
-  const router = useRouter();
   const [symbol, setSymbol] = useState("USDT");
   const [amount, setAmount] = useState("");
-  const debouncedAmount = useDebounceValue(amount, 150);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<DepositResult | null>(null);
 
   const chain = chainForAsset(symbol);
-  const feeWallet = FEE_WALLETS[chain];
   const depositWallet = DEPOSIT_WALLETS[chain];
 
   const copyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -108,7 +89,7 @@ export default function CryptoDepositPage() {
         const res = await cachedFetch("/api/crypto/deposit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ symbol, amount: debouncedAmount }),
+          body: JSON.stringify({ symbol, amount }),
         });
 
         const json = await res.json().catch(() => null);
@@ -136,13 +117,7 @@ export default function CryptoDepositPage() {
         setLoading(false);
       }
     },
-    [depositWallet, symbol]
-  );n.");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [symbol, debouncedAmount, depositWallet, feeWallet]
+    [amount, depositWallet, symbol]
   );
 
   const handleCopy = useCallback(() => {
@@ -150,9 +125,7 @@ export default function CryptoDepositPage() {
     navigator.clipboard.writeText(depositWallet).catch(() => {});
     setCopied(true);
     copyTimeout.current = setTimeout(() => setCopied(false), 1500);
-  }, [feeWallet, depositWallet]);
-
-  const showSkeleton = loading && !done;
+  }, [depositWallet]);
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -185,8 +158,6 @@ export default function CryptoDepositPage() {
             <option value="USDT">USDT — TRC20 (TRON)</option>
             <option value="USDC">USDC — TRC20 (TRON)</option>
             <option value="BTC">BTC — Bitcoin</option>
-            <option value="ETH">ETH — Ethereum</option>
-            <option value="SOL">SOL — Solana</option>
             <option value="ETH">ETH — Ethereum</option>
             <option value="SOL">SOL — Solana</option>
           </select>
@@ -225,7 +196,7 @@ export default function CryptoDepositPage() {
         >
           {loading ? (
             <>
-              <LoadingSpinner size={16} className="mr-2" />
+              <span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-white border-r-transparent align-[-2px]" />
               Depositing…
             </>
           ) : (
@@ -292,7 +263,7 @@ export default function CryptoDepositPage() {
             updated balance.
           </p>
           <button
-            onClick={() => router.push("/neobank/crypto")}
+            onClick={() => window.location.assign("/neobank/crypto")}
             className="mt-4 inline rounded-md border border-brand-600 px-3 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50"
           >
             Back to wallets
@@ -302,10 +273,10 @@ export default function CryptoDepositPage() {
 
       {/* Skeleton placeholders so the layout doesn't jump while loading. */}
       {loading && !done && (
-        <div className="space-y-4">
-          <SkeletonLine width="40%" />
-          <SkeletonLine width="70%" />
-          <Skeleton className="h-48" />
+        <div className="space-y-4" aria-hidden="true">
+          <div className="h-3 w-2/5 animate-pulse rounded bg-ink-100" />
+          <div className="h-3 w-7/10 animate-pulse rounded bg-ink-100" />
+          <div className="h-48 animate-pulse rounded bg-ink-100" />
         </div>
       )}
     </div>
