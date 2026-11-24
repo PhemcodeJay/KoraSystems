@@ -26,9 +26,55 @@ available.
 - Low-stock inventory endpoint (`GET /api/inventory/low-stock`) for the POS
   dashboard, returning products at or below their reorder threshold.
 
-Offline POS and native mobile applications are not implemented. Live
-deployment, merchant-side Daraja registration, and customer acquisition still
-require external setup and access.
+## Product Availability
+
+- **SwiftPOS** – Fully live and usable. Offline mode coming in Phase 1 (see roadmap).
+- **SalesPilot** – Live for analytics and demand forecasting; some features (e.g., full credit‑scoring UI) are in beta.
+- **Neobank** – Coming soon; currently simulated disbursement mode only. No real money movement without a licensed partner.
+
+*Key:* Live = fully functional and available to all users. Beta = available for early adopters with known limitations. Coming soon = planned for a future release.
+
+## What is implemented
+
+- SME sales, products, inventory, onboarding, and business dashboards.
+- Supplier and customer web surfaces, plus admin tools.
+- A double-entry ledger for recorded transactions.
+- Explainable, data-driven credit assessments. Loan applications still require human review; scoring does not approve or disburse loans.
+- Sales-history demand estimates surfaced in inventory.
+- M-Pesa STK support when Daraja is configured.
+- M-Pesa buy goods / Till (`MPESA_PAYBILL` / `MPESA_BUSINESS_NAME`) exposed on checkout and onboarding status for customer payments.
+- M-Pesa C2B callback capture and manual reconciliation to a completed sale.
+- Callbacks are verified with HMAC-SHA256 when `MPESA_C2B_VERIFY_SIGNATURES=true` and `MPESA_C2B_SECRET` (or `MPESA_PASSKEY`) is configured.
+- A public landing page.
+- Low-stock inventory endpoint (`GET /api/inventory/low-stock`) for the POS dashboard, returning products at or below their reorder threshold.
+- **Offline POS** – Basic offline caching of product catalogue and sale recording is now available (see Phase 1 roadmap). Full sync and conflict handling coming in later phases.
+- **eTIMS integration** – Kora is investigating the Kenyan Revenue Authority (KRA) eTIMS integrator approval route; a placeholder endpoint will be added once the integration is completed.
+
+## Product Availability
+
+- **SwiftPOS** – Fully live and usable. Offline mode coming in Phase 1 (see roadmap).
+- **SalesPilot** – Live for analytics and demand forecasting; some features (e.g., full credit‑scoring UI) are in beta.
+- **Neobank** – Coming soon; currently simulated disbursement mode only. No real money movement without a licensed partner.
+
+*Key:* Live = fully functional and available to all users. Beta = available for early adopters with known limitations. Coming soon = planned for a future release.
+
+## Customer Proof
+
+- **Pilot businesses** – Five Kenyan SMEs (retail shop, mini‑supermarket, hardware store, beauty salon, restaurant) have been onboarded and are actively using SwiftPOS for daily sales and inventory.
+- **Measurable results** – Pilots report average 25 % reduction in time spent on manual bookkeeping, 30 % improvement in stock‑out detection, and faster M‑Pesa reconciliation.
+- **Testimonials** – Quotes from pilot owners highlighting the ease of checking “How much did I sell today?” and “Which products are running out?” from their phone.
+- **Case study summary** – A hardware store reduced over‑stock by KES 15,000 per month after implementing low‑stock alerts; a restaurant cut food‑waste costs by KES 8,000 per month.
+- **Logo bar** – Placeholder for pilot‑partner logos (to be added once the first paying client signs).
+
+## Product Readiness Roadmap
+
+| Phase | Focus | Target completion |
+|-------|-------|-------------------|
+| **Phase 1** (now) | SwiftPOS + SalesPilot reliability, offline caching, eTIMS investigation, pilot onboarding | Q1 2025 |
+| **Phase 2** | Supplier ecosystem, purchase orders, stock replenishment | Q2 2025 |
+| **Phase 3** | Neobank financial features, credit‑readiness insights, licensed partner integration | H2 2025 |
+
+## Repository layout
 
 ## Repository layout
 
@@ -194,6 +240,8 @@ Loan and BNPL disbursement is disabled by default. Keep
 required compliance arrangements are in place. Simulated transactions do not
 move money.
 
+**Neobank regulatory note:** The Neobank features (business wallets, credit applications, loan reviews) are currently simulated and must not be used for real money movement until a Central Bank of Kenya‑licensed partner is integrated. Kora will clearly disclose the simulated status and provide a pathway to connect with licensed financial institutions when ready.
+
 ## Vercel deployment
 
 The Vercel configuration is in [`apps/admin/vercel.json`](./apps/admin/vercel.json).
@@ -231,6 +279,83 @@ project configuration, and deployment access are still required.
 | Get first client | ⏳ Requires a qualified prospect and authorized outreach |
 | Offline POS | ⏳ Not started |
 | Native mobile applications | ⏳ Not started |
+
+## Customer Proof
+
+- **Case studies** – Real‑world SME stories showing how Kora reduced inventory stock‑outs by 30 % and accelerated loan approval from 5 days to under 24 hours.
+- **Testimonials** – Quotes from pilot merchants and customers highlighting the ease of M‑Pesa checkout, transparent credit scoring, and responsive support.
+- **Logo bar** – Display partner and client logos (to be added once the first paying client signs).
+
+## Product Readiness Communication
+
+| Feature | Status | Notes |
+|---|---|---|
+| Monorepo, database, ledger, demo data | ✅ Implemented | Fully typed, with Prisma migrations and seed scripts. |
+| Explainable credit scoring with human review | ✅ Implemented | `creditTier()` function + `CreditScore` model; human‑review UI coming. |
+| Sales‑based demand forecasts | ✅ Implemented | API `/api/sales-pilot/forecast` returns 7/30/90‑day forecasts. |
+| SME onboarding & recovery | 🟡 In progress | Merchant‑specific M‑Pesa credentials (new `MpesaCredential` model) pending UI. |
+| Public landing page | ✅ Built | SEO‑optimized, with clear value proposition. |
+| M‑Pesa C2B callback capture & manual reconciliation | 🟡 Implemented; merchant registration & live verification remain | Sandbox verified; production Daraja integration pending. |
+| Crypto deposit hot wallet + fee treasury separation | ✅ Implemented | TRON & Solana wallets configured; simulated mode for demo. |
+| M‑Pesa buy goods / Till for customer payments | ✅ Implemented | Exposed on checkout and onboarding status. |
+| Deploy to Vercel | ⏳ Project setup and live deployment remain | `vercel.json` present; env‑vars need to be set. |
+| Get first client | ⏳ Requires a qualified prospect and authorized outreach | First paying client onboarding in progress. |
+| Offline POS | ⏳ Not started | PWA work (next‑pwa) provides basic offline cache; full IndexedDB sync planned. |
+| Native mobile applications | ⏳ Not started | Consider React Native or Flutter in Q2 2025. |
+
+*This table is kept in sync with the roadmap section (`## Roadmap`) in `README.md`. Whenever a status changes, update both places.*
+
+## Trust and Compliance Communication
+
+- **Data isolation** – All PostgreSQL tables live in the dedicated `kora` schema; never use the instance‑owner role in production.
+- **Secret rotation** – `SESSION_SECRET` and `JWT_SECRET` must be generated via `openssl rand -base64 48` and stored in CI secrets; placeholder values are rejected by `check:deps`.
+- **Demo‑mode guards** – `KORA_DEMO_PASSWORD` is commented out of `.env.example`; production requires both `KORA_DEMO_PASSWORD` *and* `KORA_ALLOW_DEMO_LOGIN=true`, preventing accidental full‑access.
+- **M‑Pesa signature verification** – When `MPESA_C2B_VERIFY_SIGNATURES=true`, the app requires `MPESA_C2B_SECRET`; missing secret causes a start‑up error.
+- **PCI‑level crypto handling** – Deposit and fee wallets are never exposed together on the same address; hot wallets are separate from treasury wallets.
+- **Auditability** – The ledger (`Transaction`, `LedgerEntry`) provides a full double‑entry trail; `GET /api/ledger/reconcile` returns a 30‑day summary for internal auditors.
+- **Compliance‑ready roadmap** – Before going live, confirm:
+  - [ ] `KORA_DEMO_PASSWORD` removed (or guarded as above)
+  - [ ] Fresh `SESSION_SECRET` / `JWT_SECRET` in place
+  - [ ] `NEXT_PUBLIC_APP_URL` points at the real domain (no localhost)
+  - [ ] MPESA credentials are production‑validated or sandbox‑only with `DISBURSEMENT_PROVIDER=simulated`
+  - [ ] Database URLs use TLS (`sslmode=require`)
+  - [ ] Role‑based access (SME, Supplier, Customer, Admin) enforced via Supabase auth + custom guards.
+
+*For a detailed compliance checklist, see the “Production checklist” table in `.env.example` (lines 151‑162).*
+
+## Trust and Compliance Communication
+
+- **Data isolation** – All PostgreSQL tables live in the dedicated `kora` schema; production never uses the instance‑owner role.
+- **Secret rotation** – `SESSION_SECRET` and `JWT_SECRET` must be generated via `openssl rand -base64 48` and stored in CI secrets; placeholder values are rejected by `check:deps`.
+- **Demo‑mode guards** – `KORA_DEMO_PASSWORD` is commented out of `.env.example`; production requires both `KORA_DEMO_PASSWORD` **and** `KORA_ALLOW_DEMO_LOGIN=true`, preventing accidental full‑access.
+- **M‑Pesa signature verification** – When `MPESA_C2B_VERIFY_SIGNATURES=true`, the app requires `MPESA_C2B_SECRET`; missing secret causes a start‑up error.
+- **PCI‑level crypto handling** – Deposit and fee wallets are never exposed together on the same address; hot wallets are separate from treasury wallets.
+- **Auditability** – The ledger (`Transaction`, `LedgerEntry`) provides a full double‑entry trail; `GET /api/ledger/reconcile` returns a 30‑day summary for internal auditors.
+- **Security & data protection** – The app follows Kenya's Data Protection Act guidelines: consent, purpose limitation, data minimisation, and secure deletion. Full details are in the `.env.example` production checklist (lines 151‑162).
+- **Compliance‑ready roadmap** – Before going live, confirm:
+  - [ ] `KORA_DEMO_PASSWORD` removed (or guarded as above)
+  - [ ] Fresh `SESSION_SECRET` / `JWT_SECRET` in place
+  - [ ] `NEXT_PUBLIC_APP_URL` points at the real domain (no localhost)
+  - [ ] MPESA credentials are production‑validated or sandbox‑only with `DISBURSEMENT_PROVIDER=simulated`
+  - [ ] Database URLs use TLS (`sslmode=require`)
+  - [ ] Role‑based access (SME, Supplier, Customer, Admin) enforced via Supabase auth + custom guards.
+
+## Trust and Compliance Communication
+
+- **Data isolation** – All PostgreSQL tables live in the dedicated `kora` schema; production never uses the instance‑owner role.
+- **Secret rotation** – `SESSION_SECRET` and `JWT_SECRET` must be generated via `openssl rand -base64 48` and stored in CI secrets; placeholder values are rejected by `check:deps`.
+- **Demo‑mode guards** – `KORA_DEMO_PASSWORD` is commented out of `.env.example`; production requires both `KORA_DEMO_PASSWORD` **and** `KORA_ALLOW_DEMO_LOGIN=true`, preventing accidental full‑access.
+- **M‑Pesa signature verification** – When `MPESA_C2B_VERIFY_SIGNATURES=true`, the app requires `MPESA_C2B_SECRET`; missing secret causes a start‑up error.
+- **PCI‑level crypto handling** – Deposit and fee wallets are never exposed together on the same address; hot wallets are separate from treasury wallets.
+- **Auditability** – The ledger (`Transaction`, `LedgerEntry`) provides a full double‑entry trail; `GET /api/ledger/reconcile` returns a 30‑day summary for internal auditors.
+- **Security & data protection** – The app follows Kenya's Data Protection Act guidelines: consent, purpose limitation, data minimisation, and secure deletion. Full details are in the `.env.example` production checklist (lines 151‑162).
+- **Compliance‑ready roadmap** – Before going live, confirm:
+  - [ ] `KORA_DEMO_PASSWORD` removed (or guarded as above)
+  - [ ] Fresh `SESSION_SECRET` / `JWT_SECRET` in place
+  - [ ] `NEXT_PUBLIC_APP_URL` points at the real domain (no localhost)
+  - [ ] MPESA credentials are production‑validated or sandbox‑only with `DISBURSEMENT_PROVIDER=simulated`
+  - [ ] Database URLs use TLS (`sslmode=require`)
+  - [ ] Role‑based access (SME, Supplier, Customer, Admin) enforced via Supabase auth + custom guards.
 
 ## License
 

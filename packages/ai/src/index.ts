@@ -291,6 +291,19 @@ export function heuristicScore(lead: LeadLike): LeadScore {
   };
 }
 
+/** Credit tier based on a 0‑100 score.
+ *  - auto‑approve: score >= threshold (default `KORA_CREDIT_AUTO_APPROVE_THRESHOLD` env, default 700)
+ *  - manual‑review: score >= threshold‑50 and < threshold
+ *  - reject: score < threshold‑50
+ */
+export function creditTier(score: number, threshold?: number): { tier: "auto-approve" | "manual-review" | "reject"; threshold: number } {
+  const th = threshold ?? Number(process.env.KORA_CREDIT_AUTO_APPROVE_THRESHOLD ?? "700");
+  const t = Number(th);
+  if (score >= t) return { tier: "auto-approve", threshold: t };
+  if (score >= t - 50) return { tier: "manual-review", threshold: t };
+  return { tier: "reject", threshold: t };
+}
+
 /** One lead rendered for a model prompt. */
 function describeLead(lead: LeadLike, index: number): string {
   const contact = lead.contactName

@@ -145,6 +145,15 @@ const nextConfig = {
       },
     ];
   },
+  /** PWA configuration via next-pwa.
+   *  - In development the service worker is disabled so hot‑reload works unchanged.
+   *  - In production the generated service worker (workbox) will cache the app shell
+   *    and assets, giving an offline‑first experience for the POS and dashboard.
+   */
+  pwa: {
+    disable: process.env.NODE_ENV === "development",
+    dest: "public",
+  },
 };
 
 export default nextConfig;

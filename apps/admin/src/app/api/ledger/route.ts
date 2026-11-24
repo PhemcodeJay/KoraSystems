@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../../../lib/prisma";
 
 /**
  * GET /api/ledger/reconcile
@@ -31,7 +31,11 @@ export async function GET() {
     });
 
     // Group by type (e.g., "sale", "refund", "adjustment")
-    const grouped = postings.reduce(
+    const grouped = postings.reduce<{
+      postings: Record<string, number>;
+      totalAmount: number;
+      totalAmountByType: Record<string, number>;
+    }>(
       (acc, p) => {
         const type = p.type; // assuming type field on the model
         acc[type] = (acc[type] ?? 0) + 1;
@@ -40,12 +44,8 @@ export async function GET() {
         acc.totalAmount += p.amount ?? 0;
         return acc;
       },
-      { postings: [], totalAmount: 0, totalAmountByType: {} as Record<string, number> }
-    ) as {
-      postings: Record<string, number>;
-      totalAmount: number;
-      totalAmountByType: Record<string, number>;
-    };
+      { postings: {}, totalAmount: 0, totalAmountByType: {} }
+    );
 
     const postingsSummary = Object.entries(grouped.totalAmountByType).map(
       ([type, total]) => ({
@@ -66,7 +66,7 @@ export async function GET() {
       FROM LedgerPosting
       WHERE createdAt >= ${thirtyDaysAgo}
       GROUP BY asset;
-    ";
+    `;
 
     const balances = assetPostings.map((row) => ({
       asset: row.asset,
@@ -74,7 +74,7 @@ export async function GET() {
     }));
 
     return NextResponse.json({
-      period: `last-30-days`,
+      period: "last-30-days",
       postings: postingsSummary,
       balances,
     });

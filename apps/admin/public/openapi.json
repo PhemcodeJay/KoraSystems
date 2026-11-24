@@ -1,0 +1,53 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "KoraSystems API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Login",
+        "responses": { "200": { "description": "Token" } }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "summary": "List products",
+        "responses": { "200": { "description": "List" } }
+      },
+      "post": {
+        "summary": "Create product",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/sales": {
+      "get": {
+        "summary": "List sales",
+        "responses": { "200": { "description": "List" } }
+      },
+      "post": {
+        "summary": "Create sale",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/checkout": {
+      "post": {
+        "summary": "Customer checkout",
+        "responses": { "200": { "description": "Order confirmed" } }
+      }
+    },
+    "/api/ledger/reconcile": {
+      "get": {
+        "summary": "Ledger reconciliation",
+        "responses": { "200": { "description": "Summary" } }
+      }
+    }
+  }
+}
