@@ -1,6 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local"],
+  "globalDependencies": [
+    "**/*.ts",
+    "**/*.mjs",
+    "**/*.cjs",
+    "package.json",
+    "turbo.json",
+    "**/.env.*local"
+  ],
   "globalEnv": [
     "NODE_ENV",
     "PORT",
@@ -19,6 +26,10 @@
     "MPESA_CALLBACK_URL",
     "KORA_PLATFORM_URL"
   ],
+  "cache": true,
+  "env": {
+    "NODE_OPTIONS": "--experimental-strip-types"
+  },
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
