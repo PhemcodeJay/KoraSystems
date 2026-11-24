@@ -1,4 +1,18 @@
-import { MetadataRoute } from "next";
+type ChangeFrequency =
+  | "always"
+  | "hourly"
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "yearly"
+  | "never";
+
+type SitemapEntry = {
+  url: string;
+  lastModified?: string | Date;
+  changeFrequency?: ChangeFrequency;
+  priority?: number;
+};
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "https://korasystems.onrender.com";
