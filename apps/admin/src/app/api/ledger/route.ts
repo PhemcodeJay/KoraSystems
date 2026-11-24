@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "../../../lib/prisma";
+import { prisma } from "../../../../lib/prisma";
 
 /**
  * GET /api/ledger/reconcile
@@ -36,9 +36,9 @@ export async function GET() {
       totalAmount: number;
       totalAmountByType: Record<string, number>;
     }>(
-      (acc, p) => {
+      (acc, p: { type: string; amount: number | null }) => {
         const type = p.type; // assuming type field on the model
-        acc[type] = (acc[type] ?? 0) + 1;
+        acc.postings[type] = (acc.postings[type] ?? 0) + 1;
         acc.totalAmountByType = acc.totalAmountByType ?? {};
         acc.totalAmountByType[type] = (acc.totalAmountByType[type] ?? 0) + (p.amount ?? 0);
         acc.totalAmount += p.amount ?? 0;
@@ -68,7 +68,7 @@ export async function GET() {
       GROUP BY asset;
     `;
 
-    const balances = assetPostings.map((row) => ({
+    const balances = assetPostings.map((row: { asset: string; debit: number; credit: number }) => ({
       asset: row.asset,
       net: (row.debit ?? 0) - (row.credit ?? 0),
     }));
