@@ -20,7 +20,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node __tests__/password.test.mjs"
+    "test": "vitest run __tests__/password.test.mjs"
   },
   "dependencies": {
     "@kora/brand": "workspace:*",
@@ -38,6 +38,7 @@
   "devDependencies": {
     "@types/node": "^20",
     "next": "14.2.35",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.0.5"
   }
 }
