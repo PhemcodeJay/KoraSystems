@@ -42,17 +42,9 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Cannot transfer to your own account" }, { status: 400 });
       }
 
-      // Prisma returns Decimal, which is a class instance, not a string.
-      // Use Prisma's Decimal arithmetic safely via toString()
-      const fromBalanceStr = fromAccount.balance.toString();
       const amountFloat = parseFloat(amount);
-      const newFromBalance = new Prisma.Decimal(
-        (parseFloat(fromBalanceStr) - amountFloat).toFixed(2)
-      ).toString();
-      const toBalanceStr = toAccount.balance.toString();
-      const newToBalance = new Prisma.Decimal(
-        (parseFloat(toBalanceStr) + amountFloat).toFixed(2)
-      ).toString();
+      const newFromBalance = fromAccount.balance.minus(amountFloat).toFixed(2);
+      const newToBalance = toAccount.balance.plus(amountFloat).toFixed(2);
 
       await prisma.account.update({ where: { id: fromAccount.id }, data: { balance: newFromBalance } });
       await prisma.account.update({ where: { id: toAccount.id }, data: { balance: newToBalance } });
