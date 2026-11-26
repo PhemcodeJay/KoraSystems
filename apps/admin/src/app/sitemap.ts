@@ -17,7 +17,7 @@ type SitemapEntry = {
 const BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "https://korasystems.onrender.com";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default async function sitemap(): Promise<SitemapEntry[]> {
   return [
     {
       url: BASE_URL,

@@ -23,12 +23,9 @@
     "MPESA_SHORTCODE",
     "MPESA_PASSKEY",
     "MPESA_CALLBACK_URL",
-    "KORA_PLATFORM_URL"
+    "KORA_PLATFORM_URL",
+    "NODE_OPTIONS"
   ],
-  "cache": true,
-  "env": {
-    "NODE_OPTIONS": "--experimental-strip-types"
-  },
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
