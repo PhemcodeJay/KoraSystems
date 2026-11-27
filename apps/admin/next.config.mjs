@@ -150,10 +150,7 @@ const nextConfig = {
    *  - In production the generated service worker (workbox) will cache the app shell
    *    and assets, giving an offline‑first experience for the POS and dashboard.
    */
-  pwa: {
-    disable: process.env.NODE_ENV === "development",
-    dest: "public",
-  },
+  // pwa config removed - using next-pwa package
 };
 
 export default nextConfig;
